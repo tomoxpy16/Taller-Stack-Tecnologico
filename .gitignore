@@ -1,0 +1,25 @@
+# Entorno
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node / Vue
+node_modules/
+dist/
+*.local
+npm-debug.log*
+
+# Editores / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
