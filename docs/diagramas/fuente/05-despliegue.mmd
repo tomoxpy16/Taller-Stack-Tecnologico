@@ -8,20 +8,22 @@ flowchart LR
     BR["<b>Navegador web</b><br/>[Chrome / Firefox / Edge]<br/>Ejecuta la SPA Vue"]:::node
   end
 
-  subgraph HOST["Host Docker [Linux / Windows con Docker Desktop] — docker compose up"]
+  subgraph HOST["Host Docker [Docker Desktop / Engine] — docker compose up --build -d"]
     direction LR
     subgraph NET["Red bridge: adopcion-net"]
       direction LR
-      FE["<b>frontend</b><br/>[imagen: nginx:alpine]<br/>SPA compilada (vite build)<br/>proxy /api → backend:8000<br/>puerto publicado 8080:80"]:::container
-      BE["<b>backend</b><br/>[imagen: python:3.12-slim]<br/>FastAPI + Uvicorn :8000<br/>MONGO_URL=mongodb://mongodb:27017<br/>healthcheck GET /health"]:::container
-      MG[("<b>mongodb</b><br/>[imagen: mongo:7]<br/>:27017 solo red interna<br/>seed inicial de animales")]:::db
+      FE["<b>frontend</b> · adopcion-frontend<br/>[build node:22-alpine → nginx:1.27-alpine]<br/>SPA compilada (vite build)<br/>/api/* → backend:8000 (quita /api)<br/>puerto 8080:80"]:::container
+      BE["<b>backend</b> · adopcion-backend<br/>[FastAPI + Uvicorn · Python 3.12]<br/>MONGO_URI con authSource=admin<br/>healthcheck GET /health<br/>puerto 8000:8000"]:::container
+      MG[("<b>mongodb</b> · adopcion-mongodb<br/>[mongo:7.0]<br/>healthcheck ping<br/>puerto 27017:27017")]:::db
     end
-    VOL[["<b>volumen</b><br/>mongo-data → /data/db"]]:::vol
+    VOL[["<b>volumen</b><br/>mongo_data → /data/db"]]:::vol
+    SEED[["<b>semilla</b><br/>./mongo/init → /docker-entrypoint-initdb.d"]]:::vol
   end
 
   BR -->|"HTTP :8080"| FE
-  FE -->|"HTTP /api/v1 (red interna)"| BE
-  BE -->|"TCP 27017"| MG
+  FE -->|"HTTP /v1/... (red interna)"| BE
+  BE -->|"Motor · TCP 27017"| MG
   MG --- VOL
+  SEED -. "solo con volumen vacío" .-> MG
   BE -. "depends_on: mongodb (healthy)" .-> MG
-  FE -. "depends_on: backend" .-> BE
+  FE -. "depends_on: backend (healthy)" .-> BE

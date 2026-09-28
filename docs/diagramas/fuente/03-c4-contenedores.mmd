@@ -9,10 +9,10 @@ flowchart TB
 
   subgraph SYS["Plataforma de Adopción de Mascotas [Sistema]"]
     direction TB
-    WEB["<b>Web App</b><br/>[Contenedor: Nginx]<br/><br/>Sirve los archivos estáticos de la SPA<br/>y hace proxy de /api hacia el backend"]:::container
+    WEB["<b>Web App</b><br/>[Contenedor: Nginx]<br/><br/>Sirve los archivos estáticos de la SPA<br/>y hace proxy de /api hacia el backend<br/>(quitando el prefijo /api)"]:::container
     SPA["<b>Single-Page Application</b><br/>[Contenedor: Vue.js 3 / JavaScript]<br/><br/>Catálogo, ficha, formulario de postulación<br/>y panel reactivo del refugio"]:::container
     API["<b>API de Adopciones</b><br/>[Contenedor: Python · FastAPI · Uvicorn]<br/><br/>Arquitectura hexagonal: expone los casos de uso<br/>vía REST / JSON:API y aplica las reglas de negocio"]:::container
-    DB[("<b>Base de datos</b><br/>[Contenedor: MongoDB]<br/><br/>Colecciones refugios, animals,<br/>adoptantes, postulaciones")]:::db
+    DB[("<b>Base de datos</b><br/>[Contenedor: MongoDB]<br/><br/>Colecciones refugios, animales,<br/>adoptantes, postulaciones")]:::db
   end
 
   IMG["<b>Servicio de imágenes</b><br/>[Sistema externo]"]:::ext

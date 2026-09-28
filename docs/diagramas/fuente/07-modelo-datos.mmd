@@ -1,0 +1,45 @@
+erDiagram
+  REFUGIOS ||--o{ ANIMALES : "publica"
+  ANIMALES ||--o{ POSTULACIONES : "recibe"
+  ADOPTANTES ||--o{ POSTULACIONES : "hace"
+
+  REFUGIOS {
+    ObjectId _id
+    string nombre
+    string email
+    string telefono
+    object direccion "ciudad, barrio, linea (embebido)"
+    date fecha_creacion
+  }
+  ANIMALES {
+    ObjectId _id
+    ObjectId refugio_id FK
+    string nombre
+    string especie "perro | gato | ave | otro"
+    int edad_meses
+    string sexo "macho | hembra"
+    string estado "disponible | postulado | adoptado"
+    array temperamento
+    object salud "vacunado, esterilizado, desparasitado (embebido)"
+    array fotos "url, descripcion (embebido)"
+    object detalles_especie "campos variables por especie"
+    date fecha_publicacion
+  }
+  ADOPTANTES {
+    ObjectId _id
+    string nombre
+    string email "unico"
+    string telefono
+    string ciudad
+    date fecha_registro
+  }
+  POSTULACIONES {
+    ObjectId _id
+    ObjectId adoptante_id FK
+    ObjectId animal_id FK
+    string estado "pendiente | aprobada | rechazada"
+    string mensaje
+    date fecha_postulacion
+    date fecha_resolucion
+    string motivo_rechazo "opcional"
+  }

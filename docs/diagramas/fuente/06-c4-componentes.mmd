@@ -32,7 +32,7 @@ flowchart TB
     end
     subgraph SALIDA["Adaptadores de salida (driven)"]
       direction LR
-      MA["<b>Mongo*Repository</b><br/>[Motor / Beanie]"]:::comp
+      MA["<b>Mongo*Repository</b><br/>[Motor · driver async]"]:::comp
       MEM["<b>InMemory*Repository</b><br/>[dict — tests]"]:::comp
     end
   end
