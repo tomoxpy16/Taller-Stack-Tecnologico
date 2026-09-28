@@ -1,0 +1,27 @@
+flowchart LR
+  classDef node fill:#ffffff,stroke:#444,color:#1b1b1b
+  classDef container fill:#438DD5,stroke:#2E6295,color:#fff
+  classDef db fill:#13AA52,stroke:#0B7A3A,color:#fff
+  classDef vol fill:#FFF3CD,stroke:#B8860B,color:#5a4500
+
+  subgraph CLIENT["Dispositivo del usuario"]
+    BR["<b>Navegador web</b><br/>[Chrome / Firefox / Edge]<br/>Ejecuta la SPA Vue"]:::node
+  end
+
+  subgraph HOST["Host Docker [Linux / Windows con Docker Desktop] — docker compose up"]
+    direction LR
+    subgraph NET["Red bridge: adopcion-net"]
+      direction LR
+      FE["<b>frontend</b><br/>[imagen: nginx:alpine]<br/>SPA compilada (vite build)<br/>proxy /api → backend:8000<br/>puerto publicado 8080:80"]:::container
+      BE["<b>backend</b><br/>[imagen: python:3.12-slim]<br/>FastAPI + Uvicorn :8000<br/>MONGO_URL=mongodb://mongodb:27017<br/>healthcheck GET /health"]:::container
+      MG[("<b>mongodb</b><br/>[imagen: mongo:7]<br/>:27017 solo red interna<br/>seed inicial de animales")]:::db
+    end
+    VOL[["<b>volumen</b><br/>mongo-data → /data/db"]]:::vol
+  end
+
+  BR -->|"HTTP :8080"| FE
+  FE -->|"HTTP /api/v1 (red interna)"| BE
+  BE -->|"TCP 27017"| MG
+  MG --- VOL
+  BE -. "depends_on: mongodb (healthy)" .-> MG
+  FE -. "depends_on: backend" .-> BE

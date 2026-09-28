@@ -1,0 +1,44 @@
+sequenceDiagram
+  autonumber
+  actor AD as Adoptante
+  actor RF as Refugio
+  participant SPA as SPA Vue.js
+  participant API as Adaptador REST<br/>(FastAPI router)
+  participant UC as Casos de uso
+  participant DOM as Dominio<br/>(Animal · Postulación)
+  participant REPO as Puerto → Adaptador Mongo
+  participant DB as MongoDB
+
+  Note over AD,DB: Flujo A — Postular a un animal
+  AD->>SPA: Abre ficha de "Luna" y envía formulario
+  SPA->>API: POST /api/v1/postulaciones (JSON:API)
+  API->>UC: PostularUseCase.ejecutar(animal_id, adoptante_id, mensaje)
+  UC->>REPO: obtener animal + postulaciones pendientes del adoptante
+  REPO->>DB: find()
+  DB-->>REPO: documentos
+  REPO-->>UC: Animal, [Postulación]
+  UC->>DOM: animal.puede_recibir_postulacion()?  ¿ya tiene una pendiente?
+  alt Animal adoptado o postulación duplicada
+    DOM-->>UC: AnimalNoDisponible / PostulacionDuplicada
+    UC-->>API: excepción de dominio
+    API-->>SPA: 409 Conflict {errors:[{code}]}
+    SPA-->>AD: Mensaje de error claro
+  else Válido
+    DOM-->>UC: nueva Postulación(pendiente), animal → postulado
+    UC->>REPO: guardar(postulación), guardar(animal)
+    REPO->>DB: insertOne / updateOne
+    API-->>SPA: 201 Created
+    SPA-->>AD: "Postulación enviada"
+  end
+
+  Note over AD,DB: Flujo B — El refugio aprueba (regla de auto-cierre)
+  RF->>SPA: Panel → "Aprobar" en postulación de Ana
+  SPA->>API: PATCH /api/v1/postulaciones/{id} {estado: aprobada}
+  API->>UC: AprobarPostulacionUseCase.ejecutar(id)
+  UC->>REPO: obtener postulación, animal y pendientes del animal
+  REPO->>DB: find()
+  UC->>DOM: postulacion.aprobar() · animal.marcar_adoptado()<br/>otras.rechazar(motivo=cierre_automatico)
+  UC->>REPO: guardar todo
+  REPO->>DB: updateOne / updateMany
+  API-->>SPA: 200 OK + included [animal adoptado, postulaciones cerradas]
+  SPA-->>RF: Panel se actualiza de forma reactiva

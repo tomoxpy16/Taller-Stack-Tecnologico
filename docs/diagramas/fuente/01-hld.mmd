@@ -1,0 +1,44 @@
+flowchart LR
+  classDef person fill:#08427B,stroke:#052E56,color:#fff
+  classDef fe fill:#438DD5,stroke:#2E6295,color:#fff
+  classDef adapterIn fill:#F5A623,stroke:#B87A12,color:#1b1b1b
+  classDef app fill:#6BA5E0,stroke:#2E6295,color:#fff
+  classDef dom fill:#2E7D32,stroke:#1B5E20,color:#fff
+  classDef port fill:#ffffff,stroke:#2E7D32,color:#1B5E20,stroke-width:2px,stroke-dasharray:5 3
+  classDef adapterOut fill:#F5A623,stroke:#B87A12,color:#1b1b1b
+  classDef db fill:#13AA52,stroke:#0B7A3A,color:#fff
+
+  R(["👤 Refugio"]):::person
+  A(["👤 Adoptante"]):::person
+
+  subgraph DOCKER["🐳 Docker Compose — red bridge adopcion-net"]
+    direction LR
+    subgraph FE["Contenedor frontend · Nginx"]
+      SPA["<b>SPA Vue.js</b><br/>Catálogo · Ficha · Postulación<br/>Panel del refugio"]:::fe
+    end
+
+    subgraph BE["Contenedor backend · FastAPI + Uvicorn"]
+      direction LR
+      IN["<b>Adaptador de entrada</b><br/>Routers REST / JSON:API<br/>+ exception handlers"]:::adapterIn
+      subgraph HEX["Núcleo hexagonal (sin dependencias de infraestructura)"]
+        direction TB
+        UC["<b>Casos de uso</b><br/>PublicarAnimal · Postular<br/>AprobarPostulación · Rechazar"]:::app
+        DOM["<b>Dominio</b><br/>Refugio · Animal · Adoptante · Postulación<br/>Reglas: disponibilidad, única activa,<br/>auto-cierre"]:::dom
+        P["<b>Puertos (Protocol)</b><br/>AnimalRepository<br/>PostulacionRepository<br/>AdoptanteRepository · RefugioRepository"]:::port
+        UC --> DOM
+        UC --> P
+      end
+      OUT["<b>Adaptadores de salida</b><br/>Mongo (Motor/Beanie)<br/>In-memory (tests)"]:::adapterOut
+      IN -->|"invoca"| UC
+      OUT -.->|"implementa"| P
+    end
+
+    subgraph DB["Contenedor mongodb"]
+      M[("<b>MongoDB</b><br/>refugios · animals<br/>adoptantes · postulaciones")]:::db
+    end
+  end
+
+  R -->|"HTTPS"| SPA
+  A -->|"HTTPS"| SPA
+  SPA -->|"REST · application/vnd.api+json"| IN
+  OUT -->|"Mongo wire protocol"| M

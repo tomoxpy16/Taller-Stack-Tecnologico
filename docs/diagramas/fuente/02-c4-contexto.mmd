@@ -1,0 +1,15 @@
+flowchart TB
+  classDef person fill:#08427B,stroke:#052E56,color:#fff
+  classDef system fill:#1168BD,stroke:#0B4884,color:#fff
+  classDef ext fill:#999999,stroke:#6B6B6B,color:#fff
+
+  A["<b>Adoptante</b><br/>[Persona]<br/><br/>Busca animales, consulta su ficha<br/>y postula para adoptarlos"]:::person
+  R["<b>Refugio</b><br/>[Persona]<br/><br/>Publica animales y aprueba o rechaza<br/>las postulaciones recibidas"]:::person
+
+  S["<b>Plataforma de Adopción de Mascotas</b><br/>[Sistema de software]<br/><br/>Gestiona el catálogo de animales, las postulaciones<br/>y el ciclo de adopción con cierre automático<br/>de postulaciones al aprobar una"]:::system
+
+  F["<b>Servicio de imágenes</b><br/>[Sistema externo]<br/><br/>Aloja las fotos de los animales<br/>(URLs públicas)"]:::ext
+
+  A -->|"Consulta animales y postula<br/>[HTTPS]"| S
+  R -->|"Publica animales y resuelve postulaciones<br/>[HTTPS]"| S
+  S -.->|"Referencia fotos por URL<br/>[HTTPS]"| F

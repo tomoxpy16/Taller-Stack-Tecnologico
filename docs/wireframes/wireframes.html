@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Wireframes</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9e9e9;font-family:"Comic Sans MS","Segoe Print",Arial,sans-serif;color:#333}
+  .screen{width:1200px;height:760px;background:#fff;border:2px solid #555;margin:0;display:flex;flex-direction:column;overflow:hidden}
+  .browser{height:34px;background:#ddd;border-bottom:2px solid #555;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:13px;font-family:Arial}
+  .dot{width:11px;height:11px;border-radius:50%;border:1.5px solid #555;background:#fff}
+  .url{flex:1;margin-left:12px;height:22px;border:1.5px solid #777;border-radius:11px;background:#fff;padding:2px 12px;color:#666}
+  header{height:62px;border-bottom:2px dashed #888;display:flex;align-items:center;padding:0 26px;gap:24px}
+  .logo{font-weight:bold;font-size:22px}
+  nav{display:flex;gap:18px;font-size:15px;flex:1}
+  nav span{border-bottom:2px solid transparent}
+  nav .on{border-bottom-color:#333;font-weight:bold}
+  .role{border:2px solid #555;border-radius:18px;padding:5px 14px;font-size:14px}
+  main{flex:1;padding:22px 26px;position:relative}
+  h1{margin:0 0 14px;font-size:24px}
+  .box{border:2px solid #666;border-radius:6px}
+  .img{background:repeating-linear-gradient(45deg,#f2f2f2,#f2f2f2 10px,#e4e4e4 10px,#e4e4e4 20px);border:2px solid #777;display:flex;align-items:center;justify-content:center;color:#888;font-size:13px}
+  .line{height:10px;background:#cfcfcf;border-radius:5px;margin:7px 0}
+  .btn{display:inline-block;border:2px solid #333;border-radius:6px;padding:8px 16px;font-size:14px;font-weight:bold;background:#fff}
+  .btn.primary{background:#333;color:#fff}
+  .btn.ok{border-color:#2e7d32;color:#2e7d32}
+  .btn.no{border-color:#b23;color:#b23}
+  .chip{display:inline-block;border:1.5px solid #666;border-radius:12px;padding:2px 10px;font-size:12px;margin:2px 4px 2px 0}
+  .chip.disp{border-color:#2e7d32;color:#2e7d32}
+  .chip.post{border-color:#c77800;color:#c77800}
+  .chip.adop{border-color:#555;color:#fff;background:#555}
+  .chip.pend{border-color:#c77800;color:#c77800}
+  .chip.aprob{border-color:#2e7d32;color:#2e7d32}
+  .chip.rech{border-color:#b23;color:#b23}
+  .note{position:absolute;background:#fff59d;border:1.5px solid #c9b800;padding:8px 10px;font-size:13px;width:210px;transform:rotate(-1.5deg);box-shadow:2px 3px 0 rgba(0,0,0,.15);z-index:3}
+  .note b{display:block;margin-bottom:3px}
+  .filters{display:flex;gap:10px;margin-bottom:16px;align-items:center}
+  .select{border:2px solid #777;border-radius:5px;padding:6px 10px;font-size:14px;min-width:130px;color:#666}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .card{padding:10px}
+  .card .img{height:130px;margin-bottom:8px}
+  .pager{margin-top:16px;display:flex;justify-content:center;gap:8px;font-size:14px}
+  .pager span{border:1.5px solid #777;border-radius:4px;padding:3px 10px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:14px;font-weight:bold;margin-bottom:4px}
+  .input{border:2px solid #777;border-radius:5px;height:34px}
+  .textarea{border:2px solid #777;border-radius:5px;height:90px}
+  .err{color:#b23;font-size:13px;margin-top:3px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{border-bottom:1.5px solid #bbb;padding:9px 8px;text-align:left}
+  th{border-bottom:2px solid #555}
+  .tabs{display:flex;gap:0;margin-bottom:14px}
+  .tabs span{border:2px solid #666;padding:6px 16px;font-size:14px;margin-right:-2px}
+  .tabs .on{background:#333;color:#fff}
+  .caption{font-family:Arial;font-size:15px;font-weight:bold;padding:10px 4px 6px;color:#222}
+</style></head><body>
+
+<!-- 1. CATÁLOGO -->
+<div class="caption" id="c1">Pantalla 1 — Catálogo de animales (Adoptante)</div>
+<div class="screen" id="s1">
+  <div class="browser"><span class="dot"></span><span class="dot"></span><span class="dot"></span><div class="url">localhost:8080/animales</div></div>
+  <header><div class="logo">🐾 Adopta</div><nav><span class="on">Animales</span><span>Mis postulaciones</span><span>Panel refugio</span></nav><div class="role">Rol: Adoptante ▾</div></header>
+  <main>
+    <h1>Animales disponibles</h1>
+    <div class="filters">
+      <div class="select">Especie ▾</div><div class="select">Estado: disponible ▾</div><div class="select">Refugio ▾</div>
+      <div style="flex:1"></div><span style="font-size:14px;color:#666">24 resultados</span>
+    </div>
+    <div class="grid">
+      <div class="box card"><div class="img">foto</div><b>Luna</b> · perro · 2 años<div><span class="chip disp">disponible</span><span class="chip">juguetona</span></div><div class="line" style="width:70%"></div></div>
+      <div class="box card"><div class="img">foto</div><b>Michi</b> · gato · 8 meses<div><span class="chip post">postulado</span><span class="chip">tranquilo</span></div><div class="line" style="width:60%"></div></div>
+      <div class="box card"><div class="img">foto</div><b>Kiwi</b> · ave · 1 año<div><span class="chip disp">disponible</span><span class="chip">sociable</span></div><div class="line" style="width:75%"></div></div>
+      <div class="box card"><div class="img">foto</div><b>Toby</b> · perro · 5 años<div><span class="chip disp">disponible</span><span class="chip">calmado</span></div><div class="line" style="width:55%"></div></div>
+    </div>
+    <div class="grid" style="margin-top:18px;opacity:.55">
+      <div class="box card"><div class="img" style="height:60px">foto</div></div><div class="box card"><div class="img" style="height:60px">foto</div></div><div class="box card"><div class="img" style="height:60px">foto</div></div><div class="box card"><div class="img" style="height:60px">foto</div></div>
+    </div>
+    <div class="pager"><span>‹</span><span style="background:#333;color:#fff">1</span><span>2</span><span>›</span></div>
+    <div class="note" style="right:30px;top:6px"><b>Filtros → query JSON:API</b>filter[especie], filter[estado], page[number]. Estado del animal como chip de color.</div>
+  </main>
+</div>
+
+<!-- 2. FICHA -->
+<div class="caption" id="c2">Pantalla 2 — Ficha del animal</div>
+<div class="screen" id="s2">
+  <div class="browser"><span class="dot"></span><span class="dot"></span><span class="dot"></span><div class="url">localhost:8080/animales/66f1a0c2</div></div>
+  <header><div class="logo">🐾 Adopta</div><nav><span class="on">Animales</span><span>Mis postulaciones</span><span>Panel refugio</span></nav><div class="role">Rol: Adoptante ▾</div></header>
+  <main style="display:flex;gap:28px">
+    <div style="width:470px">
+      <div style="font-size:14px;margin-bottom:8px">← Volver al catálogo</div>
+      <div class="img" style="height:330px">foto principal</div>
+      <div style="display:flex;gap:10px;margin-top:10px"><div class="img" style="height:70px;flex:1">1</div><div class="img" style="height:70px;flex:1">2</div><div class="img" style="height:70px;flex:1">3</div></div>
+    </div>
+    <div style="flex:1">
+      <h1 style="margin-top:26px">Luna <span class="chip disp" style="font-size:14px;vertical-align:middle">disponible</span></h1>
+      <div style="font-size:16px;margin-bottom:12px">Perro · Hembra · 2 años · Tamaño mediano</div>
+      <div class="box" style="padding:12px;margin-bottom:12px"><b>Temperamento</b><div><span class="chip">juguetona</span><span class="chip">sociable</span><span class="chip">apta con niños</span></div></div>
+      <div class="box" style="padding:12px;margin-bottom:12px"><b>Salud</b><div style="font-size:14px;margin-top:4px">✔ Vacunada &nbsp; ✔ Esterilizada</div><div class="line" style="width:80%"></div></div>
+      <div class="box" style="padding:12px;margin-bottom:18px"><b>Refugio</b><div style="font-size:14px;margin-top:4px">Huellitas Bogotá · Chapinero</div></div>
+      <span class="btn primary" style="font-size:16px;padding:12px 26px">Postularme para adoptar</span>
+      <div style="font-size:13px;color:#666;margin-top:8px">2 personas ya se postularon</div>
+    </div>
+    <div class="note" style="right:26px;bottom:26px"><b>Botón deshabilitado</b>si el animal está <u>adoptado</u> (texto: "Ya encontró hogar"). Detalles por especie salen de <i>detallesEspecie</i>.</div>
+  </main>
+</div>
+
+<!-- 3. FORMULARIO -->
+<div class="caption" id="c3">Pantalla 3 — Formulario de postulación</div>
+<div class="screen" id="s3">
+  <div class="browser"><span class="dot"></span><span class="dot"></span><span class="dot"></span><div class="url">localhost:8080/animales/66f1a0c2/postular</div></div>
+  <header><div class="logo">🐾 Adopta</div><nav><span class="on">Animales</span><span>Mis postulaciones</span><span>Panel refugio</span></nav><div class="role">Rol: Adoptante ▾</div></header>
+  <main style="display:flex;gap:30px">
+    <div class="box" style="width:300px;padding:14px;align-self:flex-start"><div class="img" style="height:170px;margin-bottom:10px">foto</div><b>Postulando a: Luna</b><div style="font-size:14px">Perro · 2 años</div><span class="chip disp">disponible</span></div>
+    <div style="flex:1;max-width:560px">
+      <h1>Tus datos</h1>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px">
+        <div class="field"><label>Nombre completo *</label><div class="input"></div></div>
+        <div class="field"><label>Email *</label><div class="input" style="border-color:#b23"></div><div class="err">Ingresa un email válido</div></div>
+        <div class="field"><label>Teléfono *</label><div class="input"></div></div>
+        <div class="field"><label>Ciudad *</label><div class="input"></div></div>
+      </div>
+      <div class="field"><label>¿Por qué quieres adoptar a Luna? * <span style="font-weight:normal;color:#777">(10–500 caracteres)</span></label><div class="textarea"></div></div>
+      <div style="border:2px solid #b23;background:#fdecee;color:#b23;padding:9px 12px;border-radius:5px;font-size:14px;margin-bottom:14px">⚠ Ya tienes una postulación pendiente para Luna. <u>Ver mis postulaciones</u></div>
+      <span class="btn primary">Enviar postulación</span> &nbsp; <span class="btn">Cancelar</span>
+    </div>
+    <div class="note" style="right:24px;top:30px"><b>Errores del backend</b>422 → mensaje bajo el campo (source.pointer). 409 → banner (ANIMAL_NO_DISPONIBLE / POSTULACION_DUPLICADA).</div>
+    <div class="note" style="right:24px;top:200px;transform:rotate(1.5deg)"><b>Éxito (201)</b>Toast "Postulación enviada" y redirección a "Mis postulaciones".</div>
+  </main>
+</div>
+
+<!-- 4. PANEL REFUGIO -->
+<div class="caption" id="c4">Pantalla 4 — Panel del refugio (aprobar / rechazar)</div>
+<div class="screen" id="s4">
+  <div class="browser"><span class="dot"></span><span class="dot"></span><span class="dot"></span><div class="url">localhost:8080/refugio/panel</div></div>
+  <header><div class="logo">🐾 Adopta</div><nav><span>Animales</span><span class="on">Panel refugio</span></nav><div class="role">Rol: Huellitas Bogotá ▾</div></header>
+  <main>
+    <div style="display:flex;align-items:center;margin-bottom:6px"><h1 style="margin:0;flex:1">Postulaciones recibidas</h1><span class="btn">+ Publicar animal</span></div>
+    <div class="tabs" style="margin-top:12px"><span class="on">Pendientes (3)</span><span>Aprobadas</span><span>Rechazadas</span><span>Mis animales</span></div>
+    <table>
+      <tr><th>Animal</th><th>Adoptante</th><th>Mensaje</th><th>Fecha</th><th>Estado</th><th style="width:230px">Acciones</th></tr>
+      <tr><td><b>Luna</b> <span class="chip post">postulado</span></td><td>Ana Gómez</td><td><div class="line" style="width:180px"></div></td><td>27/09</td><td><span class="chip pend">pendiente</span></td><td><span class="btn ok">✔ Aprobar</span> <span class="btn no">✖ Rechazar</span></td></tr>
+      <tr><td><b>Luna</b> <span class="chip post">postulado</span></td><td>Carlos Ruiz</td><td><div class="line" style="width:150px"></div></td><td>27/09</td><td><span class="chip pend">pendiente</span></td><td><span class="btn ok">✔ Aprobar</span> <span class="btn no">✖ Rechazar</span></td></tr>
+      <tr><td><b>Michi</b> <span class="chip post">postulado</span></td><td>Laura Pérez</td><td><div class="line" style="width:170px"></div></td><td>28/09</td><td><span class="chip pend">pendiente</span></td><td><span class="btn ok">✔ Aprobar</span> <span class="btn no">✖ Rechazar</span></td></tr>
+    </table>
+    <div class="box" style="margin-top:22px;padding:12px 16px;width:560px;border-style:dashed">
+      <b>Después de aprobar a Ana:</b>
+      <div style="font-size:14px;margin-top:6px">Luna → <span class="chip adop">adoptado</span> · Carlos → <span class="chip rech">rechazada</span> <i>(cierre automático)</i></div>
+      <div style="font-size:14px;margin-top:4px">Toast: "Postulación aprobada. 1 postulación cerrada automáticamente."</div>
+    </div>
+    <div class="note" style="right:30px;bottom:30px"><b>Actualización reactiva</b>La respuesta del PATCH trae el animal y las postulaciones cerradas en <i>included</i>; el store actualiza la tabla sin recargar.</div>
+    <div class="note" style="right:300px;bottom:60px;width:190px;transform:rotate(2deg)"><b>Confirmación</b>Modal: "¿Aprobar a Ana? Se cerrarán las otras 1 postulaciones de Luna."</div>
+  </main>
+</div>
+</body></html>

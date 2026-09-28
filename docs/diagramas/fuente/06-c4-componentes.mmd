@@ -1,0 +1,48 @@
+flowchart TB
+  classDef comp fill:#85BBF0,stroke:#5D82A8,color:#0b2540
+  classDef core fill:#2E7D32,stroke:#1B5E20,color:#fff
+  classDef port fill:#ffffff,stroke:#2E7D32,color:#1B5E20,stroke-width:2px,stroke-dasharray:5 3
+  classDef container fill:#438DD5,stroke:#2E6295,color:#fff
+  classDef db fill:#438DD5,stroke:#2E6295,color:#fff
+
+  SPA["<b>SPA Vue.js</b><br/>[Contenedor]"]:::container
+
+  subgraph API["API de Adopciones [Contenedor: FastAPI]"]
+    direction TB
+    subgraph ENTRADA["Adaptadores de entrada (driving)"]
+      direction LR
+      RA["<b>animals_router</b><br/>[FastAPI APIRouter]"]:::comp
+      RP["<b>postulaciones_router</b><br/>[FastAPI APIRouter]"]:::comp
+      RR["<b>refugios / adoptantes_router</b><br/>[FastAPI APIRouter]"]:::comp
+      EH["<b>jsonapi_errors</b><br/>[exception_handler]<br/>Excepción de dominio → HTTP"]:::comp
+    end
+    DI["<b>dependencies.py</b><br/>[Depends()]<br/>Composition root: decide<br/>qué adaptador inyectar"]:::comp
+    subgraph CORE["Núcleo (application + domain)"]
+      direction LR
+      UCP["<b>PostularUseCase</b>"]:::core
+      UCA["<b>AprobarPostulacionUseCase</b><br/>aprueba + auto-cierre"]:::core
+      UCPub["<b>PublicarAnimalUseCase</b>"]:::core
+      ENT["<b>Entidades + reglas</b><br/>Animal.puede_recibir_postulacion()<br/>Postulacion.aprobar() / rechazar()"]:::core
+    end
+    subgraph PUERTOS["Puertos de salida (typing.Protocol)"]
+      direction LR
+      PA["AnimalRepository"]:::port
+      PP["PostulacionRepository"]:::port
+      PO["AdoptanteRepository<br/>RefugioRepository"]:::port
+    end
+    subgraph SALIDA["Adaptadores de salida (driven)"]
+      direction LR
+      MA["<b>Mongo*Repository</b><br/>[Motor / Beanie]"]:::comp
+      MEM["<b>InMemory*Repository</b><br/>[dict — tests]"]:::comp
+    end
+  end
+  DB[("<b>MongoDB</b>")]:::db
+
+  SPA -->|"JSON:API"| RA & RP & RR
+  RA & RP & RR --> DI
+  DI --> UCP & UCA & UCPub
+  UCP & UCA & UCPub --> ENT
+  UCP & UCA & UCPub --> PA & PP & PO
+  MA -.->|"implementa"| PA & PP & PO
+  MEM -.->|"implementa"| PA & PP & PO
+  MA --> DB
