@@ -72,8 +72,11 @@ El sistema sigue el estilo **Hexagonal (Puertos y Adaptadores)**. Las reglas de 
 │       └── integration/       # Backend contra Mongo real
 └── frontend/
     ├── Dockerfile             # Build de Vite (npm run build → dist/) + Nginx
-    └── nginx.conf             # Sirve la SPA y redirige /api → backend
-                               # (el proyecto Vue se agrega aquí)
+    ├── nginx.conf             # Sirve la SPA y redirige /api → backend
+    └── src/
+        ├── api/               # Puerto hacia el backend + adaptadores HTTP (real) y mock
+        ├── views/             # Catálogo, ficha, postulación, mis postulaciones, panel del refugio
+        └── components/
 ```
 
 **Regla de dependencias:** `domain` no importa nada de `application` ni de `adapters`; `application` solo depende de `domain`; los `adapters` dependen hacia adentro, nunca al revés.
@@ -108,8 +111,6 @@ docker compose up --build -d
 ```
 
 Docker Compose arranca los servicios en orden: primero `mongodb`; cuando pasa su healthcheck, `backend`; y cuando el backend responde, `frontend`. En el primer arranque, MongoDB carga los datos semilla automáticamente.
-
-> Mientras el proyecto Vue no esté en `frontend/`, el servicio `frontend` no compila. Para levantar solo la base de datos y la API: `docker compose up --build -d mongodb backend`.
 
 ### 4. Verificar el despliegue
 
@@ -164,8 +165,11 @@ pytest                    # todas
 pytest -m integration     # solo integración
 pytest -m "not integration"
 
-# Frontend: en desarrollo, configurar el proxy de Vite para que /api apunte a http://localhost:8000
-# (quitando el prefijo /api), igual que hace Nginx en Docker.
+# Frontend (el proxy de Vite ya redirige /api → http://localhost:8000 quitando el prefijo, igual que Nginx)
+cd frontend
+npm install
+npm run dev          # contra la API real en http://localhost:5173
+npm run dev:mock     # sin backend: datos simulados que respetan las mismas reglas de negocio
 ```
 
 ## Estrategia de ramas
