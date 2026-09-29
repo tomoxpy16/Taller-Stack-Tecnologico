@@ -1,26 +1,30 @@
+---
+title: Sistema de Adopción de Mascotas — C4 Nivel 3 · Componentes de la API (Hexagonal)
+---
 flowchart TB
-  classDef comp fill:#85BBF0,stroke:#5D82A8,color:#0b2540
-  classDef core fill:#2E7D32,stroke:#1B5E20,color:#fff
-  classDef port fill:#ffffff,stroke:#2E7D32,color:#1B5E20,stroke-width:2px,stroke-dasharray:5 3
-  classDef container fill:#438DD5,stroke:#2E6295,color:#fff
-  classDef db fill:#438DD5,stroke:#2E6295,color:#fff
+  classDef ext fill:#111317,stroke:#4fc3f7,color:#f5f5f5,stroke-width:1.5px
+  classDef adapter fill:#2b1d10,stroke:#e0a050,color:#f5f5f5,stroke-width:1.5px
+  classDef di fill:#111317,stroke:#9f8ce0,color:#f5f5f5,stroke-width:1.5px
+  classDef core fill:#111317,stroke:#66bb6a,color:#f5f5f5,stroke-width:1.5px
+  classDef port fill:#111317,stroke:#66bb6a,color:#c8e6c9,stroke-width:2px,stroke-dasharray:5 3
+  classDef db fill:#0f2624,stroke:#26a69a,color:#f5f5f5,stroke-width:1.5px
 
-  SPA["<b>SPA Vue.js</b><br/>[Contenedor]"]:::container
+  SPA["<b>SPA Vue.js</b><br/>[Contenedor · Nginx]"]:::ext
 
-  subgraph API["API de Adopciones [Contenedor: FastAPI]"]
+  subgraph API["API de Adopciones — Contenedor FastAPI"]
     direction TB
     subgraph ENTRADA["Adaptadores de entrada (driving)"]
       direction LR
-      RA["<b>animals_router</b><br/>[FastAPI APIRouter]"]:::comp
-      RP["<b>postulaciones_router</b><br/>[FastAPI APIRouter]"]:::comp
-      RR["<b>refugios / adoptantes_router</b><br/>[FastAPI APIRouter]"]:::comp
-      EH["<b>jsonapi_errors</b><br/>[exception_handler]<br/>Excepción de dominio → HTTP"]:::comp
+      RA["<b>animals_router</b><br/>[FastAPI APIRouter]"]:::adapter
+      RP["<b>postulaciones_router</b><br/>[FastAPI APIRouter]"]:::adapter
+      RR["<b>refugios / adoptantes_router</b><br/>[FastAPI APIRouter]"]:::adapter
+      EH["<b>jsonapi_errors</b><br/>[exception_handler]<br/>Excepción de dominio → HTTP"]:::adapter
     end
-    DI["<b>dependencies.py</b><br/>[Depends()]<br/>Composition root: decide<br/>qué adaptador inyectar"]:::comp
-    subgraph CORE["Núcleo (application + domain)"]
+    DI["<b>dependencies.py</b> [Depends()]<br/>Composition root: decide qué adaptador inyectar"]:::di
+    subgraph CORE["Núcleo — application + domain"]
       direction LR
       UCP["<b>PostularUseCase</b>"]:::core
-      UCA["<b>AprobarPostulacionUseCase</b><br/>aprueba + auto-cierre"]:::core
+      UCA["<b>AprobarPostulacionUseCase</b><br/>aprueba + cierre automático"]:::core
       UCPub["<b>PublicarAnimalUseCase</b>"]:::core
       ENT["<b>Entidades + reglas</b><br/>Animal.puede_recibir_postulacion()<br/>Postulacion.aprobar() / rechazar()"]:::core
     end
@@ -32,17 +36,23 @@ flowchart TB
     end
     subgraph SALIDA["Adaptadores de salida (driven)"]
       direction LR
-      MA["<b>Mongo*Repository</b><br/>[Motor · driver async]"]:::comp
-      MEM["<b>InMemory*Repository</b><br/>[dict — tests]"]:::comp
+      MA["<b>Mongo*Repository</b><br/>[Motor · driver async]"]:::adapter
+      MEM["<b>InMemory*Repository</b><br/>[dict — tests]"]:::adapter
     end
   end
-  DB[("<b>MongoDB</b>")]:::db
+  DB[("<b>MongoDB</b><br/>[Contenedor]")]:::db
 
-  SPA -->|"JSON:API"| RA & RP & RR
-  RA & RP & RR --> DI
-  DI --> UCP & UCA & UCPub
+  SPA -->|"REST · JSON:API"| RP
+  RP -->|"resuelve dependencias"| DI
+  DI -->|"inyecta repositorios"| UCA
   UCP & UCA & UCPub --> ENT
-  UCP & UCA & UCPub --> PA & PP & PO
-  MA -.->|"implementa"| PA & PP & PO
-  MEM -.->|"implementa"| PA & PP & PO
-  MA --> DB
+  UCA -->|"depende solo de puertos"| PP
+  MA -.->|"implementa"| PP
+  MEM -.->|"implementa"| PA
+  MA -->|"Mongo wire protocol"| DB
+
+  style API fill:#23222f,stroke:#9f8ce0,color:#ffffff
+  style ENTRADA fill:#2a2118,stroke:#e0a050,color:#ffffff
+  style CORE fill:#1b2a1d,stroke:#66bb6a,color:#ffffff
+  style PUERTOS fill:#1b2a1d,stroke:#66bb6a,color:#ffffff
+  style SALIDA fill:#2a2118,stroke:#e0a050,color:#ffffff

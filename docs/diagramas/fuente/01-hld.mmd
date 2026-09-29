@@ -1,44 +1,56 @@
+---
+title: Sistema de Adopción de Mascotas — Arquitectura de Alto Nivel (HLD) · Hexagonal
+---
 flowchart LR
-  classDef person fill:#08427B,stroke:#052E56,color:#fff
-  classDef fe fill:#438DD5,stroke:#2E6295,color:#fff
-  classDef adapterIn fill:#F5A623,stroke:#B87A12,color:#1b1b1b
-  classDef app fill:#6BA5E0,stroke:#2E6295,color:#fff
-  classDef dom fill:#2E7D32,stroke:#1B5E20,color:#fff
-  classDef port fill:#ffffff,stroke:#2E7D32,color:#1B5E20,stroke-width:2px,stroke-dasharray:5 3
-  classDef adapterOut fill:#F5A623,stroke:#B87A12,color:#1b1b1b
-  classDef db fill:#13AA52,stroke:#0B7A3A,color:#fff
+  classDef actor fill:#111317,stroke:#9aa0a6,color:#f5f5f5,stroke-width:1.5px
+  classDef fe fill:#111317,stroke:#4fc3f7,color:#f5f5f5,stroke-width:1.5px
+  classDef adapter fill:#2b1d10,stroke:#e0a050,color:#f5f5f5,stroke-width:1.5px
+  classDef core fill:#111317,stroke:#66bb6a,color:#f5f5f5,stroke-width:1.5px
+  classDef port fill:#111317,stroke:#66bb6a,color:#c8e6c9,stroke-width:2px,stroke-dasharray:5 3
+  classDef db fill:#0f2624,stroke:#26a69a,color:#f5f5f5,stroke-width:1.5px
 
-  R(["👤 Refugio"]):::person
-  A(["👤 Adoptante"]):::person
+  subgraph USR["Superficies de interacción"]
+    direction TB
+    R(["Refugio"]):::actor
+    A(["Adoptante"]):::actor
+  end
 
-  subgraph DOCKER["🐳 Docker Compose — red bridge adopcion-net"]
+  subgraph DOCKER["Docker Compose — red bridge adopcion-net (3 contenedores)"]
     direction LR
-    subgraph FE["Contenedor frontend · Nginx"]
-      SPA["<b>SPA Vue.js</b><br/>Catálogo · Ficha · Postulación<br/>Panel del refugio"]:::fe
+    subgraph FE["Contenedor frontend · Nginx :8080"]
+      SPA["<b>SPA Vue.js 3</b><br/>Catálogo · Ficha · Postulación<br/>Mis postulaciones · Panel del refugio"]:::fe
     end
 
-    subgraph BE["Contenedor backend · FastAPI + Uvicorn"]
+    subgraph BE["Contenedor backend · FastAPI + Uvicorn :8000"]
       direction LR
-      IN["<b>Adaptador de entrada</b><br/>Routers REST / JSON:API<br/>+ exception handlers"]:::adapterIn
-      subgraph HEX["Núcleo hexagonal (sin dependencias de infraestructura)"]
+      IN["<b>Adaptador de entrada</b><br/>Routers REST / JSON:API<br/>+ exception handlers"]:::adapter
+      subgraph HEX["Núcleo hexagonal — sin dependencias de infraestructura"]
         direction TB
-        UC["<b>Casos de uso</b><br/>PublicarAnimal · Postular<br/>AprobarPostulación · Rechazar"]:::app
-        DOM["<b>Dominio</b><br/>Refugio · Animal · Adoptante · Postulación<br/>Reglas: disponibilidad, única activa,<br/>auto-cierre"]:::dom
-        P["<b>Puertos (Protocol)</b><br/>AnimalRepository<br/>PostulacionRepository<br/>AdoptanteRepository · RefugioRepository"]:::port
+        UC["<b>Casos de uso</b><br/>PublicarAnimal · Postular<br/>AprobarPostulación · Rechazar"]:::core
+        DOM["<b>Dominio</b><br/>Refugio · Animal · Adoptante · Postulación<br/>Reglas: disponibilidad, única activa,<br/>cierre automático"]:::core
+        P["<b>Puertos (typing.Protocol)</b><br/>AnimalRepository · PostulacionRepository<br/>AdoptanteRepository · RefugioRepository"]:::port
         UC --> DOM
         UC --> P
       end
-      OUT["<b>Adaptadores de salida</b><br/>Mongo (Motor/Beanie)<br/>In-memory (tests)"]:::adapterOut
+      OUT["<b>Adaptadores de salida</b><br/>Mongo (Motor)<br/>In-memory (tests)"]:::adapter
       IN -->|"invoca"| UC
       OUT -.->|"implementa"| P
     end
 
-    subgraph DB["Contenedor mongodb"]
-      M[("<b>MongoDB</b><br/>refugios · animales<br/>adoptantes · postulaciones")]:::db
+    subgraph DB["Contenedor mongodb · volumen mongo_data"]
+      M[("<b>MongoDB 7</b><br/>refugios · animales<br/>adoptantes · postulaciones")]:::db
     end
   end
 
   R -->|"HTTPS"| SPA
   A -->|"HTTPS"| SPA
-  SPA -->|"REST · application/vnd.api+json"| IN
+  SPA -->|"REST · application/vnd.api+json<br/>Nginx reenvía /api"| IN
   OUT -->|"Mongo wire protocol"| M
+
+  style USR fill:#26272e,stroke:#9aa0a6,color:#ffffff
+  style DOCKER fill:#221c1f,stroke:#e57373,color:#ffffff
+  style FE fill:#1a2530,stroke:#4fc3f7,color:#ffffff
+  style BE fill:#23222f,stroke:#9f8ce0,color:#ffffff
+  style HEX fill:#1b2a1d,stroke:#66bb6a,color:#ffffff
+  style DB fill:#162826,stroke:#26a69a,color:#ffffff
+  linkStyle 3 stroke:#e0a050,stroke-width:2px
