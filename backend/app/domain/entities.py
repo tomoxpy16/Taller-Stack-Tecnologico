@@ -106,6 +106,10 @@ class Animal(Entidad):
     detalles_especie: dict[str, Any] = Field(default_factory=dict)
     fecha_publicacion: datetime = Field(default_factory=_ahora)
 
+    @property
+    def texto_adoptado(self) -> str:
+        return "adoptada" if self.sexo == Sexo.HEMBRA else "adoptado"
+
     def puede_recibir_postulaciones(self) -> bool:
         # Se admite postular en "disponible" y en "postulado"; si no, nunca habría dos
         # pendientes y el cierre automático no se ejecutaría (contrato API, sección 5.1).
@@ -113,7 +117,7 @@ class Animal(Entidad):
 
     def validar_postulable(self) -> None:
         if not self.puede_recibir_postulaciones():
-            raise AnimalNoDisponible(f"{self.nombre} ya fue adoptado.")
+            raise AnimalNoDisponible(f"{self.nombre} ya fue {self.texto_adoptado}.")
 
     def registrar_postulacion(self) -> None:
         self.validar_postulable()
@@ -127,7 +131,7 @@ class Animal(Entidad):
     def liberar(self) -> None:
         """Vuelve a disponible cuando el refugio rechazó todas las pendientes."""
         if self.estado == EstadoAnimal.ADOPTADO:
-            raise TransicionInvalida(f"{self.nombre} ya fue adoptado.")
+            raise TransicionInvalida(f"{self.nombre} ya fue {self.texto_adoptado}.")
         self.estado = EstadoAnimal.DISPONIBLE
 
 

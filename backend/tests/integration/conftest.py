@@ -29,3 +29,7 @@ async def mongo_db():
     yield db
     await client.drop_database(name)
     client.close()
+
+
+# Fixtures HTTP (app completa con repositorios in-memory): `repos` y `client`.
+from tests.integration.api_helpers import client, repos  # noqa: E402,F401

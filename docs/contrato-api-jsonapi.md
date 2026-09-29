@@ -162,11 +162,25 @@ La respuesta trae `meta.total` y `links.first/prev/next/last`.
 | 409 | `ANIMAL_NO_DISPONIBLE` | postular a animal `adoptado` |
 | 409 | `POSTULACION_DUPLICADA` | el adoptante ya tiene una `pendiente` sobre ese animal |
 | 409 | `POSTULACION_YA_RESUELTA` | aprobar/rechazar una postulación que no está `pendiente` |
+| 409 | `TRANSICION_INVALIDA` | cambio de estado del animal que su ciclo de vida no permite |
+| 409 | `ID_NO_COINCIDE` | en un `PATCH`, `data.id` distinto del id de la URL |
+| 405 | `METODO_NO_PERMITIDO` | verbo HTTP no soportado en esa ruta |
 | 415 | `CONTENT_TYPE_INVALIDO` | falta `application/vnd.api+json` |
 | 422 | `VALIDACION` | campo inválido; un error por campo con `source.pointer` (ej. `/data/attributes/mensaje`) |
-| 500 | `ERROR_INTERNO` | no esperado |
+| 500 | `ERROR_INTERNO` | no esperado (no expone detalles internos) |
 
-Mapeo sugerido en el backend: excepciones de dominio (`AnimalNoDisponible`, `PostulacionDuplicada`, `PostulacionYaResuelta`) → `exception_handler` de FastAPI → estos códigos. El dominio no conoce HTTP; solo el adaptador de entrada.
+Los errores de parámetros (`filter[...]`, `page[...]`, `include`) son 400 con `source.parameter` en vez de `source.pointer`.
+
+**Implementación** (`backend/app/adapters/inbound/api/errors.py`): las excepciones de dominio (`app/domain/exceptions.py`) se traducen a estos códigos con un `exception_handler` de FastAPI; el dominio no conoce HTTP, solo el adaptador de entrada. Una subclase nueva hereda el código de su padre, y una regla sin mapeo responde 409 `REGLA_DE_NEGOCIO` (nunca 500).
+
+### Las dos validaciones de la postulación
+
+| Regla | Dónde se valida | Respuesta |
+|---|---|---|
+| No postular a un animal no disponible | `Animal.validar_postulable()` (dominio). Solo `adoptado` bloquea; `postulado` sigue aceptando (ver 5.1). | 409 `ANIMAL_NO_DISPONIBLE`, `detail`: "Luna ya fue adoptada." |
+| No duplicar una postulación activa | Caso de uso `Postular`, con `PostulacionRepository.existe_pendiente()`. Solo cuenta la `pendiente`: tras un rechazo se puede volver a postular. | 409 `POSTULACION_DUPLICADA`, `detail`: "Ya tienes una postulación pendiente para Luna." |
+
+La regla 1 se evalúa antes que la 2, y un rechazo no guarda nada ni cambia el estado del animal. En MongoDB, la regla 2 tiene además un respaldo en el índice único parcial `postulacion_pendiente_unica`, para el caso de dos peticiones simultáneas.
 
 ---
 

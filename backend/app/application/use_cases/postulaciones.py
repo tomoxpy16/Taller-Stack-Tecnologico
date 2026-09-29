@@ -51,7 +51,7 @@ class Postular(_ConRepositorios):
             raise RecursoNoEncontrado(f"No existe el adoptante {adoptante_id}.")
         animal.validar_postulable()  # regla 1
         if await self._postulaciones.existe_pendiente(adoptante_id, animal_id):  # regla 2
-            raise PostulacionDuplicada("Ya tienes una postulación pendiente para este animal.")
+            raise PostulacionDuplicada(f"Ya tienes una postulación pendiente para {animal.nombre}.")
 
         postulacion = await self._postulaciones.guardar(
             Postulacion(animal_id=animal_id, adoptante_id=adoptante_id, mensaje=mensaje)

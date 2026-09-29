@@ -6,6 +6,8 @@ import logging
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
+from pydantic.alias_generators import to_camel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.adapters.inbound.api.jsonapi import ErrorDeSolicitud, JSONAPIResponse
@@ -103,6 +105,18 @@ async def _validacion(_: Request, exc: RequestValidationError) -> JSONAPIRespons
     return _respuesta(422, salida)
 
 
+async def _validacion_dominio(_: Request, exc: ValidationError) -> JSONAPIResponse:
+    """Una entidad rechazó un dato que pasó el borde (p. ej. reglas de forma más estrictas en el
+    dominio). Es un error del cliente, no del servidor: 422 en lugar de 500."""
+    salida = []
+    for e in exc.errors():
+        campo = to_camel(str(e["loc"][-1])) if e["loc"] else ""
+        detalle = MENSAJES_CAMPO.get(campo, e["msg"])
+        source = {"pointer": f"/data/attributes/{campo}"} if campo else None
+        salida.append(_error(422, "VALIDACION", "Campo inválido", detalle, source))
+    return _respuesta(422, salida)
+
+
 async def _http(_: Request, exc: StarletteHTTPException) -> JSONAPIResponse:
     codigos = {404: "RECURSO_NO_ENCONTRADO", 405: "METODO_NO_PERMITIDO"}
     code = codigos.get(exc.status_code, "ERROR_HTTP")
@@ -118,5 +132,6 @@ def registrar_manejadores(app: FastAPI) -> None:
     app.add_exception_handler(ErrorDeDominio, _dominio)
     app.add_exception_handler(ErrorDeSolicitud, _solicitud)
     app.add_exception_handler(RequestValidationError, _validacion)
+    app.add_exception_handler(ValidationError, _validacion_dominio)
     app.add_exception_handler(StarletteHTTPException, _http)
     app.add_exception_handler(Exception, _inesperado)
