@@ -1,0 +1,41 @@
+$ docker run --network none ...  # sin red: no hay MongoDB ni servidor alcanzable
+$ python -m pytest tests/unit/test_casos_de_uso_con_mocks.py tests/unit/test_entities.py -v
+============================================ test session starts =============================================
+collecting ... collected 34 items
+
+tests/unit/test_casos_de_uso_con_mocks.py::test_los_mocks_respetan_el_contrato_del_puerto PASSED       [  2%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_postular_consulta_valida_y_guarda PASSED               [  5%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_regla1_animal_adoptado_no_escribe_nada PASSED          [  8%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_regla2_duplicada_no_escribe_nada PASSED                [ 11%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_postular_a_animal_inexistente_no_consulta_nada_mas PASSED [ 14%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_aprobar_guarda_la_adopcion_antes_de_cerrar_las_demas PASSED [ 17%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_aprobar_una_resuelta_no_escribe_nada PASSED            [ 20%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_rechazar_con_otras_pendientes_no_toca_al_animal PASSED [ 23%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_rechazar_la_ultima_pendiente_libera_al_animal PASSED   [ 26%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_publicar_en_refugio_inexistente_no_guarda PASSED       [ 29%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_publicar_ignora_el_estado_y_el_id_del_cliente PASSED   [ 32%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_registrar_con_email_existente_no_crea_otro PASSED      [ 35%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_consultas_de_refugio_delegan_en_el_puerto PASSED       [ 38%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_consultar_adoptante PASSED                             [ 41%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_registrar_adoptante_nuevo_lo_guarda PASSED             [ 44%]
+tests/unit/test_casos_de_uso_con_mocks.py::test_un_animal_adoptado_no_se_puede_liberar PASSED          [ 47%]
+tests/unit/test_entities.py::test_animal_nuevo_arranca_disponible_y_sin_id PASSED                      [ 50%]
+tests/unit/test_entities.py::test_detalles_especie_acepta_campos_libres PASSED                         [ 52%]
+tests/unit/test_entities.py::test_animal_rechaza_datos_invalidos[cambio0] PASSED                       [ 55%]
+tests/unit/test_entities.py::test_animal_rechaza_datos_invalidos[cambio1] PASSED                       [ 58%]
+tests/unit/test_entities.py::test_animal_rechaza_datos_invalidos[cambio2] PASSED                       [ 61%]
+tests/unit/test_entities.py::test_mensaje_de_postulacion_debe_tener_al_menos_10_caracteres PASSED      [ 64%]
+tests/unit/test_entities.py::test_asignar_estado_invalido_tambien_falla PASSED                         [ 67%]
+tests/unit/test_entities.py::test_primera_postulacion_pasa_el_animal_a_postulado PASSED                [ 70%]
+tests/unit/test_entities.py::test_animal_postulado_sigue_recibiendo_postulaciones PASSED               [ 73%]
+tests/unit/test_entities.py::test_regla1_no_se_postula_a_un_animal_adoptado PASSED                     [ 76%]
+tests/unit/test_entities.py::test_solo_se_adopta_un_animal_postulado PASSED                            [ 79%]
+tests/unit/test_entities.py::test_animal_postulado_vuelve_a_disponible_al_liberarse PASSED             [ 82%]
+tests/unit/test_entities.py::test_aprobar_resuelve_la_postulacion PASSED                               [ 85%]
+tests/unit/test_entities.py::test_rechazo_del_refugio_guarda_el_motivo PASSED                          [ 88%]
+tests/unit/test_entities.py::test_regla3_cierre_automatico PASSED                                      [ 91%]
+tests/unit/test_entities.py::test_una_postulacion_resuelta_no_se_vuelve_a_resolver[aprobar] PASSED     [ 94%]
+tests/unit/test_entities.py::test_una_postulacion_resuelta_no_se_vuelve_a_resolver[rechazar] PASSED    [ 97%]
+tests/unit/test_entities.py::test_una_postulacion_resuelta_no_se_vuelve_a_resolver[cerrar_automaticamente] PASSED [100%]
+
+============================================= 34 passed in 0.45s =============================================

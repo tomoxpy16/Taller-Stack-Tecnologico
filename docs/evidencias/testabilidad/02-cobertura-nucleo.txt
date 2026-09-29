@@ -1,0 +1,22 @@
+$ docker run --network none ...  # sin red: no hay MongoDB ni servidor alcanzable
+$ python -m pytest tests/unit --cov=app/domain --cov=app/application --cov-report=term-missing
+..............................................................................                         [100%]
+
+---------- coverage: platform linux, python 3.12.14-final-0 ----------
+Name                                         Stmts   Miss  Cover   Missing
+--------------------------------------------------------------------------
+app/application/__init__.py                      0      0   100%
+app/application/ports/__init__.py                2      0   100%
+app/application/ports/repositories.py           20      0   100%
+app/application/use_cases/__init__.py            5      0   100%
+app/application/use_cases/adoptantes.py         19      0   100%
+app/application/use_cases/animales.py           26      0   100%
+app/application/use_cases/postulaciones.py      72      0   100%
+app/application/use_cases/refugios.py           16      0   100%
+app/domain/__init__.py                           0      0   100%
+app/domain/entities.py                         107      0   100%
+app/domain/exceptions.py                         6      0   100%
+--------------------------------------------------------------------------
+TOTAL                                          273      0   100%
+
+78 passed in 2.13s

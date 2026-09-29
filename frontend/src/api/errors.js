@@ -24,8 +24,11 @@ export class ApiError extends Error {
     const out = {}
     for (const e of this.errors) {
       if (!e.pointer) continue
-      const campo = e.pointer.split('/').pop()
-      out[campo] = e.detail || e.title
+      // /data/attributes/fotos/0 -> "fotos": el campo es lo que sigue a "attributes", no el índice.
+      const partes = e.pointer.split('/')
+      const i = partes.indexOf('attributes')
+      const campo = i >= 0 && partes[i + 1] ? partes[i + 1] : partes.pop()
+      out[campo] ??= e.detail || e.title
     }
     return out
   }
@@ -38,6 +41,9 @@ export const MENSAJES = {
   POSTULACION_YA_RESUELTA: 'Esta postulación ya fue resuelta por otra persona. Recarga la página.',
   RECURSO_NO_ENCONTRADO: 'No encontramos lo que buscas.',
   VALIDACION: 'Revisa los campos marcados.',
+  TRANSICION_INVALIDA: 'Esta acción ya no aplica al estado actual del animal. Recarga la página.',
+  SOLICITUD_MALFORMADA: 'La solicitud no es válida. Recarga la página e inténtalo de nuevo.',
+  ERROR_INTERNO: 'Ocurrió un error en el servidor. Inténtalo de nuevo en unos minutos.',
   RED: 'No se pudo conectar con el servidor. ¿Está corriendo el backend?',
 }
 
