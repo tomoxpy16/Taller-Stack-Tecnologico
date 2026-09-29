@@ -2,10 +2,17 @@
 import pytest
 
 from app.adapters.outbound.persistence.memory import (
+    InMemoryAdoptanteRepository,
     InMemoryAnimalRepository,
     InMemoryPostulacionRepository,
+    InMemoryRefugioRepository,
 )
-from app.application.ports import AnimalRepository, PostulacionRepository
+from app.application.ports import (
+    AdoptanteRepository,
+    AnimalRepository,
+    PostulacionRepository,
+    RefugioRepository,
+)
 from app.application.use_cases import (
     AprobarPostulacion,
     ConsultarAnimal,
@@ -14,8 +21,17 @@ from app.application.use_cases import (
     Postular,
     PublicarAnimal,
     RechazarPostulacion,
+    RegistrarAdoptante,
 )
-from app.domain.entities import Animal, EstadoAnimal, EstadoPostulacion, MotivoCierre
+from app.domain.entities import (
+    Adoptante,
+    Animal,
+    Direccion,
+    EstadoAnimal,
+    EstadoPostulacion,
+    MotivoCierre,
+    Refugio,
+)
 from app.domain.exceptions import (
     AnimalNoDisponible,
     PostulacionDuplicada,
@@ -37,27 +53,45 @@ def postulaciones(animales):
 
 
 @pytest.fixture
-async def luna(animales):
-    animal = Animal(refugio_id="huellitas", nombre="Luna", especie="perro", edad_meses=24, sexo="hembra")
-    return await PublicarAnimal(animales).ejecutar(animal)
+def refugios():
+    return InMemoryRefugioRepository([
+        Refugio(id=i, nombre=i.title(), email=f"{i}@refugio.org", direccion=Direccion(ciudad="Bogotá"))
+        for i in ("huellitas", "patitas", "r", "r1", "r2")
+    ])
 
 
 @pytest.fixture
-def postular(animales, postulaciones):
-    return Postular(animales, postulaciones).ejecutar
+def adoptantes():
+    return InMemoryAdoptanteRepository([
+        Adoptante(id=i, nombre=i.title(), email=f"{i}@mail.com", telefono="3001112233", ciudad="Bogotá")
+        for i in ("ana", "carlos", "vale")
+    ])
 
 
-def test_los_adaptadores_in_memory_cumplen_los_puertos(animales, postulaciones):
+@pytest.fixture
+async def luna(animales, refugios):
+    animal = Animal(refugio_id="huellitas", nombre="Luna", especie="perro", edad_meses=24, sexo="hembra")
+    return await PublicarAnimal(animales, refugios).ejecutar(animal)
+
+
+@pytest.fixture
+def postular(animales, postulaciones, adoptantes):
+    return Postular(animales, postulaciones, adoptantes).ejecutar
+
+
+def test_los_adaptadores_in_memory_cumplen_los_puertos(animales, postulaciones, refugios, adoptantes):
     assert isinstance(animales, AnimalRepository)
     assert isinstance(postulaciones, PostulacionRepository)
+    assert isinstance(refugios, RefugioRepository)
+    assert isinstance(adoptantes, AdoptanteRepository)
 
 
 # --- Animales -------------------------------------------------------------------
 
-async def test_publicar_asigna_id_y_fuerza_estado_disponible(animales):
+async def test_publicar_asigna_id_y_fuerza_estado_disponible(animales, refugios):
     animal = Animal(refugio_id="r", nombre="Kiwi", especie="ave", edad_meses=8, sexo="macho",
                     estado=EstadoAnimal.ADOPTADO)
-    publicado = await PublicarAnimal(animales).ejecutar(animal)
+    publicado = await PublicarAnimal(animales, refugios).ejecutar(animal)
     assert publicado.id is not None
     assert publicado.estado == EstadoAnimal.DISPONIBLE
 
@@ -67,8 +101,8 @@ async def test_consultar_animal_inexistente(animales):
         await ConsultarAnimal(animales).ejecutar("no-existe")
 
 
-async def test_listar_filtra_y_pagina(animales):
-    publicar = PublicarAnimal(animales).ejecutar
+async def test_listar_filtra_y_pagina(animales, refugios):
+    publicar = PublicarAnimal(animales, refugios).ejecutar
     for i in range(5):
         await publicar(Animal(refugio_id="r1", nombre=f"Perro {i}", especie="perro", edad_meses=i, sexo="macho"))
     await publicar(Animal(refugio_id="r2", nombre="Michi", especie="gato", edad_meses=3, sexo="hembra"))
@@ -139,8 +173,8 @@ async def test_regla3_aprobar_adopta_y_cierra_las_demas(animales, postulaciones,
     assert (await animales.obtener(luna.id)).estado == EstadoAnimal.ADOPTADO
 
 
-async def test_aprobar_no_toca_postulaciones_de_otros_animales(animales, postulaciones, luna, postular):
-    rocky = await PublicarAnimal(animales).ejecutar(
+async def test_aprobar_no_toca_postulaciones_de_otros_animales(animales, postulaciones, refugios, luna, postular):
+    rocky = await PublicarAnimal(animales, refugios).ejecutar(
         Animal(refugio_id="huellitas", nombre="Rocky", especie="perro", edad_meses=36, sexo="macho")
     )
     a_luna = await postular(animal_id=luna.id, adoptante_id="ana", mensaje=MENSAJE)
@@ -182,8 +216,8 @@ async def test_rechazar_con_otras_pendientes_mantiene_postulado(animales, postul
 
 # --- Consultas -----------------------------------------------------------------------
 
-async def test_listar_postulaciones_por_adoptante_y_por_refugio(animales, postulaciones, luna, postular):
-    michi = await PublicarAnimal(animales).ejecutar(
+async def test_listar_postulaciones_por_adoptante_y_por_refugio(animales, postulaciones, refugios, luna, postular):
+    michi = await PublicarAnimal(animales, refugios).ejecutar(
         Animal(refugio_id="patitas", nombre="Michi", especie="gato", edad_meses=6, sexo="macho")
     )
     await postular(animal_id=luna.id, adoptante_id="ana", mensaje=MENSAJE)
@@ -194,18 +228,43 @@ async def test_listar_postulaciones_por_adoptante_y_por_refugio(animales, postul
     assert len(await listar.por_adoptante("ana")) == 2
     assert len(await listar.por_refugio("huellitas")) == 2
     assert len(await listar.por_refugio("patitas")) == 1
+    assert len(await listar.por_refugio("huellitas", EstadoPostulacion.APROBADA)) == 0
+
+
+# --- Validaciones de existencia -------------------------------------------------------
+
+async def test_publicar_en_refugio_inexistente(animales, refugios):
+    animal = Animal(refugio_id="fantasma", nombre="Toby", especie="perro", edad_meses=5, sexo="macho")
+    with pytest.raises(RecursoNoEncontrado):
+        await PublicarAnimal(animales, refugios).ejecutar(animal)
+
+
+async def test_postular_con_adoptante_inexistente(luna, postular):
+    with pytest.raises(RecursoNoEncontrado):
+        await postular(animal_id=luna.id, adoptante_id="fantasma", mensaje=MENSAJE)
+
+
+# --- Adoptantes -------------------------------------------------------------------------
+
+async def test_registrar_adoptante_nuevo_y_reutilizar_por_email(adoptantes):
+    registrar = RegistrarAdoptante(adoptantes).ejecutar
+    nuevo = Adoptante(nombre="Sofía", email="Sofia@Mail.com", telefono="3004445566", ciudad="Cali")
+    creado, fue_creado = await registrar(nuevo)
+    otra_vez, fue_creado_2 = await registrar(nuevo.model_copy(update={"email": "sofia@mail.com"}))
+    assert fue_creado and not fue_creado_2
+    assert otra_vez.id == creado.id
 
 
 # --- Flujo end-to-end del README ---------------------------------------------------------
 
-async def test_flujo_completo(animales, postulaciones):
+async def test_flujo_completo(animales, postulaciones, refugios, adoptantes):
     # 1. El refugio publica
-    rocky = await PublicarAnimal(animales).ejecutar(
+    rocky = await PublicarAnimal(animales, refugios).ejecutar(
         Animal(refugio_id="huellitas", nombre="Rocky", especie="perro", edad_meses=36, sexo="macho",
                detalles_especie={"raza": "Labrador", "tamano": "grande"})
     )
     # 2-3. Dos adoptantes consultan y postulan; el sistema valida
-    postular = Postular(animales, postulaciones).ejecutar
+    postular = Postular(animales, postulaciones, adoptantes).ejecutar
     await ConsultarAnimal(animales).ejecutar(rocky.id)
     de_ana = await postular(animal_id=rocky.id, adoptante_id="ana", mensaje=MENSAJE)
     await postular(animal_id=rocky.id, adoptante_id="carlos", mensaje="Me encantaría darle un hogar.")

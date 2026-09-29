@@ -1,4 +1,4 @@
-from app.application.ports import AnimalRepository
+from app.application.ports import AnimalRepository, RefugioRepository
 from app.domain.entities import Animal, Especie, EstadoAnimal
 from app.domain.exceptions import RecursoNoEncontrado
 
@@ -8,10 +8,13 @@ TAMANO_PAGINA_MAX = 50
 class PublicarAnimal:
     """Paso 1 del flujo: el refugio publica un animal, que siempre entra como disponible."""
 
-    def __init__(self, animales: AnimalRepository):
+    def __init__(self, animales: AnimalRepository, refugios: RefugioRepository):
         self._animales = animales
+        self._refugios = refugios
 
     async def ejecutar(self, animal: Animal) -> Animal:
+        if await self._refugios.obtener(animal.refugio_id) is None:
+            raise RecursoNoEncontrado(f"No existe el refugio {animal.refugio_id}.")
         # El estado lo gobierna el dominio: se ignora lo que venga del cliente.
         publicado = animal.model_copy(update={"id": None, "estado": EstadoAnimal.DISPONIBLE})
         return await self._animales.guardar(publicado)

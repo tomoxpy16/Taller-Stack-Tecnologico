@@ -6,7 +6,15 @@ FastAPI inyecta el concreto con Depends(). Son async porque el adaptador real us
 """
 from typing import Protocol, runtime_checkable
 
-from app.domain.entities import Animal, Especie, EstadoAnimal, EstadoPostulacion, Postulacion
+from app.domain.entities import (
+    Adoptante,
+    Animal,
+    Especie,
+    EstadoAnimal,
+    EstadoPostulacion,
+    Postulacion,
+    Refugio,
+)
 
 
 @runtime_checkable
@@ -57,4 +65,27 @@ class PostulacionRepository(Protocol):
 
     async def guardar(self, postulacion: Postulacion) -> Postulacion:
         """Inserta si postulacion.id es None; si no, actualiza."""
+        ...
+
+
+@runtime_checkable
+class RefugioRepository(Protocol):
+    async def obtener(self, refugio_id: str) -> Refugio | None:
+        ...
+
+    async def listar(self) -> list[Refugio]:
+        ...
+
+
+@runtime_checkable
+class AdoptanteRepository(Protocol):
+    async def obtener(self, adoptante_id: str) -> Adoptante | None:
+        ...
+
+    async def obtener_por_email(self, email: str) -> Adoptante | None:
+        """Búsqueda sin distinguir mayúsculas: el email identifica al adoptante (sin login)."""
+        ...
+
+    async def guardar(self, adoptante: Adoptante) -> Adoptante:
+        """Inserta si adoptante.id es None; si no, actualiza."""
         ...

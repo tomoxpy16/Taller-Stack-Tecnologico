@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from app.application.ports import AnimalRepository, PostulacionRepository
+from app.application.ports import AdoptanteRepository, AnimalRepository, PostulacionRepository
 from app.domain.entities import Animal, EstadoAnimal, EstadoPostulacion, Postulacion
 from app.domain.exceptions import PostulacionDuplicada, RecursoNoEncontrado
 
@@ -36,8 +36,19 @@ class _ConRepositorios:
 class Postular(_ConRepositorios):
     """Pasos 2-3 del flujo: el adoptante postula y el sistema valida las reglas 1 y 2."""
 
+    def __init__(
+        self,
+        animales: AnimalRepository,
+        postulaciones: PostulacionRepository,
+        adoptantes: AdoptanteRepository,
+    ):
+        super().__init__(animales, postulaciones)
+        self._adoptantes = adoptantes
+
     async def ejecutar(self, *, animal_id: str, adoptante_id: str, mensaje: str) -> Postulacion:
         animal = await self._animal(animal_id)
+        if await self._adoptantes.obtener(adoptante_id) is None:
+            raise RecursoNoEncontrado(f"No existe el adoptante {adoptante_id}.")
         animal.validar_postulable()  # regla 1
         if await self._postulaciones.existe_pendiente(adoptante_id, animal_id):  # regla 2
             raise PostulacionDuplicada("Ya tienes una postulación pendiente para este animal.")
@@ -100,8 +111,16 @@ class ListarPostulaciones:
     def __init__(self, postulaciones: PostulacionRepository):
         self._postulaciones = postulaciones
 
-    async def por_adoptante(self, adoptante_id: str) -> list[Postulacion]:
-        return await self._postulaciones.listar_por_adoptante(adoptante_id)
+    async def por_adoptante(
+        self, adoptante_id: str, estado: EstadoPostulacion | None = None
+    ) -> list[Postulacion]:
+        return _con_estado(await self._postulaciones.listar_por_adoptante(adoptante_id), estado)
 
-    async def por_refugio(self, refugio_id: str) -> list[Postulacion]:
-        return await self._postulaciones.listar_por_refugio(refugio_id)
+    async def por_refugio(
+        self, refugio_id: str, estado: EstadoPostulacion | None = None
+    ) -> list[Postulacion]:
+        return _con_estado(await self._postulaciones.listar_por_refugio(refugio_id), estado)
+
+
+def _con_estado(postulaciones: list[Postulacion], estado: EstadoPostulacion | None) -> list[Postulacion]:
+    return [p for p in postulaciones if estado is None or p.estado == estado]
