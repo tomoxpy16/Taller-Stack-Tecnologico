@@ -218,7 +218,10 @@ npm run dev          # contra la API real en http://localhost:5173
 | [`docs/revision-validaciones-errores.md`](docs/revision-validaciones-errores.md) | Revisión cruzada de validaciones y manejo de errores |
 | [`docs/investigacion-vue-rest-jsonapi.md`](docs/investigacion-vue-rest-jsonapi.md) | Investigación de Vue + REST/JSON:API |
 | [`docs/wireframes/`](docs/wireframes/) | Wireframes de las pantallas |
-| [`docs/sustentacion/`](docs/sustentacion/) | Diapositivas y guion de la sustentación |
+| [`docs/guion-sustentacion.md`](docs/guion-sustentacion.md) | Guion de la sustentación: recorrido de diagramas, demo en vivo y plan B |
+| [`docs/sustentacion/`](docs/sustentacion/) | Diapositivas y guion de la parte de dominio y puertos/adaptadores |
+| [`docs/capturas/`](docs/capturas/) | Capturas de la demo, en orden (plan B si la demo falla) |
+| [`docs/evidencias/`](docs/evidencias/) | Evidencias de testabilidad e integración contra el backend real |
 
 ## Estrategia de ramas
 
