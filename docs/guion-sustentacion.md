@@ -20,7 +20,7 @@ Recorrer de lo general a lo particular. Una idea por diagrama.
 | 6 | Componentes C4 (`06-c4-componentes.png`) | "Aquí se ve el hexágono en el código: los routers son adaptadores de entrada, `dependencies.py` es la raíz de composición, el núcleo depende solo de puertos." | Puertos como `typing.Protocol`; adaptador Mongo y en memoria implementan el mismo puerto. |
 | 7 | Modelo de datos (`07-modelo-datos.png`) | "Cuatro colecciones; el animal embebe salud, fotos y detalles por especie (ADR-002); las relaciones entre agregados son por id." | `motivo_rechazo`: distingue rechazo manual del cierre automático. |
 
-**Cierre de la sección (frase puente a la demo):** "El frontend aplica la misma idea: un puerto de API con dos adaptadores, real y simulado. Por eso pudimos construirlo antes que el backend. Veámoslo funcionando."
+**Cierre de la sección (frase puente a la demo):** "El frontend aplica la misma idea: las vistas solo conocen un puerto de API, y detrás está el adaptador HTTP que habla JSON:API con el backend. Veámoslo funcionando."
 
 ---
 
@@ -28,13 +28,13 @@ Recorrer de lo general a lo particular. Una idea por diagrama.
 
 ### Preparación (antes de entrar al salón)
 
-1. Abrir VS Code en `Taller-Stack-Tecnologico`.
-2. **Opción A, Docker (principal):** `docker compose up --build` y verificar `http://localhost` (frontend) y `http://localhost/api/v1/animals`.
-   - ⚠️ Solo funciona completa si el backend en Docker ya usa el adaptador de MongoDB **con datos semilla**. Con el adaptador en memoria arranca vacío (sin refugios ni animales) y no hay endpoint para crear refugios.
-3. **Opción B, sin Docker (respaldo probado):** `Terminal → Run Task… → "Demo completa (backend real + frontend)"`. Levanta el backend real de Gustavo con datos semilla y el frontend en `http://localhost:5174`.
-4. Dejar abiertas dos pestañas: la app y Swagger (`http://localhost:8000/docs` en la Opción B).
+1. Abrir VS Code en `Taller-Stack-Tecnologico` (rama `develop`).
+2. `docker compose up --build` y verificar `http://localhost` (frontend) y `http://localhost/api/v1/animals`.
+3. Dejar abiertas dos pestañas: la app y Swagger (`http://localhost:8000/docs`).
 
-Datos semilla de la demo: refugios *Huellitas Bogotá* y *Patitas Felices*; animales Luna, Michi, Kiwi, Toby, Nala (adoptada) y Coco; adoptantes Ana, Carlos y Laura. **Luna tiene 3 postulaciones pendientes**: es la que muestra el cierre automático.
+El frontend **solo** habla con la API real: no hay datos simulados. Si el backend o MongoDB no responden, la app muestra el error en lugar de datos falsos.
+
+Datos iniciales (seed de MongoDB, `mongo/init/01-seed.js`): refugios *Fundación Huellitas* y *Refugio Patitas Felices*; animales Luna, Rocky, Michi, Nala (adoptada), Kiwi y Toby; adoptantes Ana, Carlos y Valentina. **Rocky tiene 2 postulaciones pendientes** (Ana y Carlos): es el que muestra el cierre automático.
 
 ### Recorrido
 
@@ -44,9 +44,9 @@ Datos semilla de la demo: refugios *Huellitas Bogotá* y *Patitas Felices*; anim
 | 2 | Adoptante | Abrir la ficha de **Kiwi** (ave). | "La ficha cambia según la especie: son los `detallesEspecie` embebidos del ADR-002." |
 | 3 | Adoptante | Postular a Kiwi con el formulario vacío y luego completo. | "Primero valida el borde (formato); la regla de negocio la valida el dominio." |
 | 4 | Adoptante | Intentar postular **otra vez** a Kiwi. | "El dominio lanza `PostulacionDuplicada`; el adaptador REST la traduce a 409 con el formato de error JSON:API y la UI muestra el mensaje." |
-| 5 | Refugio | Cambiar a *Huellitas Bogotá* → panel → **Luna** (3 pendientes). | "Tres personas quieren a Luna." |
-| 6 | Refugio | Aprobar la postulación de Ana → confirmar. | "Una sola operación: Ana aprobada, Carlos y Laura rechazadas por **cierre automático**, Luna pasa a adoptada, sin recargar la página (ADR-004)." |
-| 7 | Adoptante | Volver al catálogo: Luna ya no está disponible. | "El estado es consistente en todo el sistema." |
+| 5 | Refugio | Cambiar a *Fundación Huellitas* → panel → **Rocky** (2 pendientes). | "Dos personas quieren a Rocky." |
+| 6 | Refugio | Aprobar la postulación de Ana → confirmar. | "Una sola operación: Ana aprobada, Carlos rechazado por **cierre automático**, Rocky pasa a adoptado, sin recargar la página (ADR-004)." |
+| 7 | Adoptante | Volver al catálogo: Rocky ya no está disponible. | "El estado es consistente en todo el sistema." |
 | 8 | (opcional) | Swagger: `GET /v1/animals?include=refugio`. | "Documento compuesto: ficha y refugio en una sola petición." |
 
 Si sobra tiempo: publicar un animal nuevo desde el panel del refugio.
@@ -57,8 +57,7 @@ Si sobra tiempo: publicar un animal nuevo desde el panel del refugio.
 
 | Falla | Qué hacer |
 |---|---|
-| Docker no levanta o el backend arranca vacío | Pasar a la Opción B (tarea "Demo completa"). Tarda < 1 min. |
-| La tarea de VS Code falla | `cd frontend && npm run dev:mock`: el frontend corre con el adaptador simulado, que respeta las mismas reglas. Decirlo explícitamente: "Esto es el adaptador simulado, la prueba de que el puerto funciona." |
+| Docker no levanta | Revisar `docker compose logs backend mongodb`; reiniciar con `docker compose down && docker compose up --build`. Si no se resuelve en 1 min, pasar a las capturas. |
 | No hay computador o red | Mostrar las capturas en orden (abajo). |
 
 Capturas en `docs/capturas/`, en el orden de la demo:

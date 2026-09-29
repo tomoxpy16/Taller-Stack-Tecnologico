@@ -69,10 +69,10 @@ Hexagonal es un estilo del **backend**: aísla el dominio de la infraestructura.
 
 Además, el frontend aplica la misma idea a pequeña escala:
 - `src/api/index.js` es el **puerto** de la SPA hacia el backend. Las vistas solo importan `api` desde ahí.
-- Detrás hay **dos adaptadores intercambiables** con la misma interfaz: `httpAdapter.js` (API FastAPI real) y `mockAdapter.js` (datos en memoria que respetan las mismas reglas de negocio).
-- El adaptador se elige por configuración (`VITE_USE_MOCK`), igual que el backend elige su repositorio con `Depends()`.
+- Detrás está el **adaptador HTTP** (`httpAdapter.js`), que traduce las llamadas a JSON:API contra la API de FastAPI.
+- Durante el desarrollo hubo un segundo adaptador con datos en memoria que permitió construir las pantallas antes de que existiera el backend; se retiró al integrar para que la app solo muestre datos reales o el error.
 
-Resultado práctico: el frontend se construyó y probó completo **antes** de que el backend existiera, y cambiar al backend real no toca ninguna vista. Es la misma propiedad que Hexagonal promete para el dominio: **sustituir infraestructura sin reescribir la lógica que la usa**.
+Resultado práctico: cambiar de adaptador no tocó ninguna vista. Es la misma propiedad que Hexagonal promete para el dominio: **sustituir infraestructura sin reescribir la lógica que la usa**.
 
 ---
 

@@ -1,7 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { sesion, toasts } from './stores/sesion'
-import { usandoMock } from './api'
 
 const router = useRouter()
 function cambiarRol(e) {
@@ -19,7 +18,6 @@ function cambiarRol(e) {
         <RouterLink v-if="sesion.rol === 'adoptante'" to="/mis-postulaciones">Mis postulaciones</RouterLink>
         <RouterLink v-if="sesion.rol === 'refugio'" to="/refugio">Panel refugio</RouterLink>
       </nav>
-      <span v-if="usandoMock" class="mock-badge" title="Datos simulados en memoria (npm run dev:mock)">MOCK</span>
       <label class="rol">
         <span class="sr-only">Rol</span>
         <select :value="sesion.rol" @change="cambiarRol">

@@ -76,7 +76,7 @@ El sistema sigue el estilo **Hexagonal (Puertos y Adaptadores)**. Las reglas de 
     ├── Dockerfile             # Build de Vite (npm run build → dist/) + Nginx
     ├── nginx.conf             # Sirve la SPA y redirige /api → backend
     └── src/
-        ├── api/               # Puerto hacia el backend + adaptadores HTTP (real) y mock
+        ├── api/               # Puerto hacia el backend + adaptador HTTP
         ├── views/             # Catálogo, ficha, postulación, mis postulaciones, panel del refugio
         └── components/
 ```
@@ -204,7 +204,6 @@ uvicorn app.main:app --reload    # API en http://localhost:8000/v1, usando el Mo
 cd frontend
 npm install
 npm run dev          # contra la API real en http://localhost:5173
-npm run dev:mock     # sin backend: datos simulados que respetan las mismas reglas de negocio
 ```
 
 ## Documentación
