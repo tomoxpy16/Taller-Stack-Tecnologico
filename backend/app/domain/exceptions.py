@@ -3,6 +3,10 @@ class ErrorDeDominio(Exception):
     de entrada traduce cada subclase a su código JSON:API (ver docs/contrato-api-jsonapi.md)."""
 
 
+class RecursoNoEncontrado(ErrorDeDominio):
+    """El id pedido no existe (animal o postulación)."""
+
+
 class AnimalNoDisponible(ErrorDeDominio):
     """Regla 1: no se puede postular a un animal que ya fue adoptado."""
 
