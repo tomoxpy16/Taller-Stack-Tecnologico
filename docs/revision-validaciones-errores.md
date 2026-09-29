@@ -76,7 +76,8 @@ Antes de esta revisión, los códigos sin mensaje propio no fallaban: se mostrab
 
 ### Pendientes (documentados)
 
-1. **Carrera en la regla 2 con MongoDB.** Dos postulaciones idénticas simultáneas pueden pasar ambas `existe_pendiente()`. El índice único parcial `postulacion_pendiente_unica` detiene la segunda, pero el adaptador de Mongo (aún no implementado) debe traducir `DuplicateKeyError` a `PostulacionDuplicada`; si no, respondería 500.
+1. ~~**Carrera en la regla 2 con MongoDB.**~~ **Resuelto.** Dos postulaciones idénticas simultáneas pueden pasar ambas `existe_pendiente()`; el índice único parcial `postulacion_pendiente_unica` detiene la segunda y el adaptador de Mongo traduce el `DuplicateKeyError` a `PostulacionDuplicada` (409). Lo mismo con el email del adoptante: el segundo registro simultáneo reutiliza el existente. Pruebas en [`test_mongo_repositorios.py`](../backend/tests/integration/test_mongo_repositorios.py).
+   - **Sigue pendiente:** dos aprobaciones simultáneas sobre el mismo animal. Haría falta una actualización condicional (por estado o versión) en el puerto.
 2. **Registro con email existente ignora los datos nuevos.** Si un adoptante vuelve con el mismo email pero otro teléfono, `POST /adoptantes` devuelve el registro anterior sin avisar. Es la decisión del contrato (5.3), pero la interfaz podría indicarlo.
 3. **El `detail` de un 404 incluye el id pedido** ("No existe el animal fantasma."). No es sensible en este sistema (ids públicos), pero conviene saberlo si se agregan recursos privados.
 

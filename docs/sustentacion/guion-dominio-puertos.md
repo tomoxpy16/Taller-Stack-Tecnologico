@@ -77,10 +77,10 @@ Un `Protocol` usa tipado estructural: el adaptador no hereda ni importa nada del
 Los puertos expresan lo que necesitan los *casos de uso* (capa de aplicación). El dominio (entidades y reglas) no necesita persistir nada. El ADR-007 menciona "en el dominio"; en el código quedaron en `application`, lo que respeta igual la regla de dependencias.
 
 **¿Qué pasa si dos adoptantes postulan al mismo tiempo, o dos personas aprueban a la vez?**
-Con el adaptador in-memory no hay concurrencia real. En MongoDB, la regla 2 tiene respaldo en el índice único parcial `postulacion_pendiente_unica`; el adaptador debe traducir `DuplicateKeyError` a `PostulacionDuplicada`. Para dos aprobaciones simultáneas haría falta actualización condicional (por estado o versión). Está documentado como pendiente en la revisión de validaciones.
+Con el adaptador in-memory no hay concurrencia real. En MongoDB, la regla 2 tiene respaldo en el índice único parcial `postulacion_pendiente_unica`, y el adaptador traduce el `DuplicateKeyError` a `PostulacionDuplicada` (409). Para dos aprobaciones simultáneas haría falta actualización condicional (por estado o versión). Está documentado como pendiente en la revisión de validaciones.
 
 **¿Cómo se cambia de in-memory a Mongo?**
-Escribiendo un adaptador que cumpla los cuatro puertos y cambiando `crear_repositorios()` en `dependencies.py`. Ni los routers ni los casos de uso cambian. Las mismas pruebas de casos de uso se pueden correr contra ambos adaptadores.
+Escribiendo un adaptador que cumpla los cuatro puertos y cambiando qué repositorios devuelve `get_repositorios()` en `dependencies.py` (hoy, `crear_repositorios_mongo()`; las pruebas lo reemplazan por `crear_repositorios_en_memoria()`). Ni los routers ni los casos de uso cambian. Las mismas pruebas de casos de uso se pueden correr contra ambos adaptadores.
 
 **¿No es *overengineering* para 4 entidades?**
 En parte sí, y lo decimos en la matriz de calidad. Se justifica por la regla de cierre automático y porque el valor del sistema está en la corrección de las reglas, no en el volumen de pantallas.

@@ -240,7 +240,7 @@ Las cuatro decisiones abiertas de la propuesta v0.1 quedaron así, y están impl
 | 5.3 | Registro de adoptante | Registro mínimo en el formulario de postulación, sin login. Si el email ya existe se reutiliza el adoptante (200). | R9 · `test_registrar_adoptante_y_reutilizar_por_email` |
 | 5.4 | Fotos | URLs externas (sin subida de archivos). Solo `http(s)://` o `data:image/…`, para no pintar `javascript:` en `<img src>`. | `test_foto_con_url_peligrosa_o_invalida_es_422` |
 
-Pendiente para el adaptador de MongoDB (no cambia el contrato): traducir `DuplicateKeyError` del índice `postulacion_pendiente_unica` a `PostulacionDuplicada`, para que dos postulaciones simultáneas respondan 409 y no 500.
+Resuelto en el adaptador de MongoDB (no cambia el contrato): el `DuplicateKeyError` del índice `postulacion_pendiente_unica` se traduce a `PostulacionDuplicada`, así que dos postulaciones simultáneas responden 409 y no 500. Del mismo modo, dos registros simultáneos con el mismo email reutilizan el adoptante existente (5.3).
 
 ---
 

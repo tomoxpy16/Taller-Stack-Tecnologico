@@ -144,11 +144,11 @@ target.animales.insertMany([
 // --- Postulaciones ----------------------------------------------------------
 target.postulaciones.insertMany([
   // Rocky: dos pendientes -> escenario para demostrar el auto-cierre al aprobar una.
-  { adoptante_id: ana, animal_id: rocky, estado: "pendiente", mensaje: "Tengo casa con patio y experiencia con perros grandes.", fecha_postulacion: haceDias(4), fecha_resolucion: null },
-  { adoptante_id: carlos, animal_id: rocky, estado: "pendiente", mensaje: "Me encantaría darle un hogar tranquilo.", fecha_postulacion: haceDias(2), fecha_resolucion: null },
+  { adoptante_id: ana, animal_id: rocky, estado: "pendiente", mensaje: "Tengo casa con patio y experiencia con perros grandes.", fecha_postulacion: haceDias(4), fecha_resolucion: null, motivo_cierre: null },
+  { adoptante_id: carlos, animal_id: rocky, estado: "pendiente", mensaje: "Me encantaría darle un hogar tranquilo.", fecha_postulacion: haceDias(2), fecha_resolucion: null, motivo_cierre: null },
   // Nala: ya adoptada, con el historial resultante del auto-cierre.
-  { adoptante_id: valentina, animal_id: nala, estado: "aprobada", mensaje: "Vivo sola y trabajo desde casa.", fecha_postulacion: haceDias(30), fecha_resolucion: haceDias(25) },
-  { adoptante_id: ana, animal_id: nala, estado: "rechazada", mensaje: "Me gustan mucho los gatos siameses.", fecha_postulacion: haceDias(28), fecha_resolucion: haceDias(25), motivo_rechazo: "Cerrada automáticamente: el animal fue adoptado" },
+  { adoptante_id: valentina, animal_id: nala, estado: "aprobada", mensaje: "Vivo sola y trabajo desde casa.", fecha_postulacion: haceDias(30), fecha_resolucion: haceDias(25), motivo_cierre: null },
+  { adoptante_id: ana, animal_id: nala, estado: "rechazada", mensaje: "Me gustan mucho los gatos siameses.", fecha_postulacion: haceDias(28), fecha_resolucion: haceDias(25), motivo_cierre: "cierre_automatico" },
 ]);
 
 print(`Semilla cargada en '${target.getName()}': ${target.refugios.countDocuments()} refugios, ${target.adoptantes.countDocuments()} adoptantes, ${target.animales.countDocuments()} animales, ${target.postulaciones.countDocuments()} postulaciones.`);

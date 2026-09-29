@@ -1,11 +1,12 @@
 """Cableado: qué adaptador de salida concreto reciben los casos de uso. Es el único lugar que
 conoce las implementaciones; los routers piden `Repositorios` con Depends() y nada más.
 
-Por ahora se inyecta el adaptador in-memory. Para usar MongoDB basta con cambiar
-`crear_repositorios()`; ni los routers ni los casos de uso se enteran.
+En producción se inyecta el adaptador de MongoDB; las pruebas HTTP lo reemplazan por el
+in-memory con app.dependency_overrides. Ni los routers ni los casos de uso se enteran del cambio.
 """
 from dataclasses import dataclass
-from functools import lru_cache
+
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.adapters.outbound.persistence.memory import (
     InMemoryAdoptanteRepository,
@@ -13,6 +14,13 @@ from app.adapters.outbound.persistence.memory import (
     InMemoryPostulacionRepository,
     InMemoryRefugioRepository,
 )
+from app.adapters.outbound.persistence.mongo import (
+    MongoAdoptanteRepository,
+    MongoAnimalRepository,
+    MongoPostulacionRepository,
+    MongoRefugioRepository,
+)
+from app.adapters.outbound.persistence.mongo import client as mongo
 from app.application.ports import (
     AdoptanteRepository,
     AnimalRepository,
@@ -39,8 +47,18 @@ def crear_repositorios_en_memoria() -> Repositorios:
     )
 
 
-@lru_cache
+def crear_repositorios_mongo(db: AsyncIOMotorDatabase) -> Repositorios:
+    animales = MongoAnimalRepository(db)
+    return Repositorios(
+        animales=animales,
+        postulaciones=MongoPostulacionRepository(db, animales),
+        refugios=MongoRefugioRepository(db),
+        adoptantes=MongoAdoptanteRepository(db),
+    )
+
+
 def get_repositorios() -> Repositorios:
-    """Una sola instancia por proceso (los datos en memoria se comparten entre peticiones).
-    Las pruebas la reemplazan con app.dependency_overrides."""
-    return crear_repositorios_en_memoria()
+    """Repositorios de MongoDB sobre el cliente que abre el lifespan de main.py. Son objetos
+    livianos sin estado propio, así que se crean por petición. Las pruebas la reemplazan con
+    app.dependency_overrides."""
+    return crear_repositorios_mongo(mongo.get_database())
