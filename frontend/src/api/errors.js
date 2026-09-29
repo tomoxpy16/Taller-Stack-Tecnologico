@@ -1,5 +1,5 @@
 /**
- * Error uniforme que devuelven ambos adaptadores (HTTP y mock).
+ * Error uniforme que devuelve el adaptador HTTP.
  * Refleja el objeto `errors[]` de JSON:API para que las vistas
  * manejen igual un 409 real que uno simulado.
  */

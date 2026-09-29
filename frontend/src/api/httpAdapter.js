@@ -1,6 +1,5 @@
 /**
  * Adaptador HTTP: habla con la API FastAPI real usando JSON:API.
- * Implementa exactamente la misma interfaz que mockAdapter.js.
  */
 import { ApiError } from './errors'
 import { parseDocument, toDocument } from './jsonapi'
