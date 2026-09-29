@@ -126,9 +126,10 @@ async function publicar() {
         <div class="field"><label>Notas</label><input v-model="form.notasSalud" /></div>
       </fieldset>
 
-      <div class="field">
+      <div class="field" :class="{ invalido: errores.fotos }">
         <label for="p-foto">URL de foto</label>
         <input id="p-foto" v-model="form.fotoUrl" type="url" placeholder="https://…" />
+        <small v-if="errores.fotos">{{ errores.fotos }}</small>
       </div>
 
       <div v-if="errorGeneral" class="alert alert--error">⚠ {{ errorGeneral }}</div>

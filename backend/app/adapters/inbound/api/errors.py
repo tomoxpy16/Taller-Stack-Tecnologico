@@ -42,6 +42,9 @@ MENSAJES_CAMPO = {
     "ciudad": "Indica tu ciudad.",
     "mensaje": "Cuéntale al refugio por qué (10 a 500 caracteres).",
     "estado": 'El estado debe ser "aprobada" o "rechazada".',
+    "fotos": "Cada foto debe ser una URL http(s) o una imagen embebida (máx. 10).",
+    "temperamento": "Máximo 15 rasgos de hasta 40 caracteres.",
+    "detallesEspecie": "Máximo 20 detalles por especie.",
 }
 
 
@@ -80,6 +83,16 @@ def _es_malformada(err: dict) -> bool:
     return err["type"] == "json_invalid" or loc[-1] == "type" or loc in (("body",), ("body", "data"))
 
 
+def _campo_y_ruta(loc: tuple) -> tuple[str, tuple]:
+    """El campo es lo que sigue a `attributes` (fotos/0/str -> fotos). Pydantic agrega etiquetas
+    internas de las uniones al final de la ruta; el puntero se corta en el campo y su índice."""
+    if "attributes" in loc:
+        i = loc.index("attributes")
+        indice = [p for p in loc[i + 2:i + 3] if isinstance(p, int)]
+        return str(loc[i + 1]), (*loc[:i + 2], *indice)
+    return str(loc[-1]), loc
+
+
 async def _validacion(_: Request, exc: RequestValidationError) -> JSONAPIResponse:
     errores = exc.errors()
     malformados = [e for e in errores if e["loc"][0] == "body" and _es_malformada(e)]
@@ -96,12 +109,15 @@ async def _validacion(_: Request, exc: RequestValidationError) -> JSONAPIRespons
             for e in parametros
         ])
 
-    salida = []
+    salida, vistos = [], set()
     for e in errores:
-        campo = str(e["loc"][-1])
+        campo, ruta = _campo_y_ruta(e["loc"][1:])
+        if ruta in vistos:  # una unión inválida reporta un error por cada tipo: basta uno por campo
+            continue
+        vistos.add(ruta)
         detalle = "Campo obligatorio." if e["type"] == "missing" else MENSAJES_CAMPO.get(campo, e["msg"])
-        pointer = "/" + "/".join(str(p) for p in e["loc"][1:])
-        salida.append(_error(422, "VALIDACION", "Campo inválido", detalle, {"pointer": pointer}))
+        salida.append(_error(422, "VALIDACION", "Campo inválido", detalle,
+                             {"pointer": "/" + "/".join(str(p) for p in ruta)}))
     return _respuesta(422, salida)
 
 

@@ -8,6 +8,9 @@ from pydantic.alias_generators import to_camel
 from app.domain.entities import Adoptante, Animal, Especie, Foto, Salud, Sexo
 
 Texto = Annotated[str, StringConstraints(strip_whitespace=True)]
+# Solo URLs http(s) o imágenes embebidas: evita guardar "javascript:..." que luego se pinta en <img src>.
+UrlFoto = Annotated[str, StringConstraints(strip_whitespace=True, max_length=2_000_000,
+                                           pattern=r"^(https?://\S+|data:image/[\w.+-]+[;,]\S*)$")]
 
 
 class _Modelo(BaseModel):
@@ -33,7 +36,7 @@ RelAdoptante = _relacion("adoptantes", "Adoptante")
 # --- animals ------------------------------------------------------------------
 
 class FotoEntrada(BaseModel):
-    url: str
+    url: UrlFoto
     descripcion: str | None = None
 
 
@@ -49,10 +52,12 @@ class AnimalAtributos(_Modelo):
     especie: Especie
     edad_meses: int = Field(ge=0)
     sexo: Sexo
-    temperamento: list[Texto] = Field(default_factory=list)
+    # Topes de tamaño: sin ellos un cliente podría guardar documentos arbitrariamente grandes.
+    temperamento: list[Annotated[str, StringConstraints(strip_whitespace=True, max_length=40)]] = Field(
+        default_factory=list, max_length=15)
     salud: SaludEntrada = Field(default_factory=SaludEntrada)
-    fotos: list[str | FotoEntrada] = Field(default_factory=list)  # el contrato usa URLs; se aceptan ambas
-    detalles_especie: dict[str, Any] = Field(default_factory=dict)
+    fotos: list[UrlFoto | FotoEntrada] = Field(default_factory=list, max_length=10)  # contrato: URLs
+    detalles_especie: dict[str, Any] = Field(default_factory=dict, max_length=20)
 
 
 class AnimalRelaciones(BaseModel):

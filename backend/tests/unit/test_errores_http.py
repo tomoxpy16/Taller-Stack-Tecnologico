@@ -86,3 +86,13 @@ def test_postulacion_ya_resuelta_dice_en_que_estado_quedo():
     p.aprobar()
     with pytest.raises(PostulacionYaResuelta, match="aprobada"):
         p.rechazar()
+
+
+@pytest.mark.parametrize("loc, campo, ruta", [
+    (("data", "attributes", "mensaje"), "mensaje", ("data", "attributes", "mensaje")),
+    (("data", "attributes", "fotos", 0, "constrained-str"), "fotos", ("data", "attributes", "fotos", 0)),
+    (("data", "attributes", "fotos", 2, "FotoEntrada", "url"), "fotos", ("data", "attributes", "fotos", 2)),
+    (("data", "relationships", "animal", "data", "id"), "id", ("data", "relationships", "animal", "data", "id")),
+])
+def test_campo_y_puntero_ignoran_etiquetas_internas_de_pydantic(loc, campo, ruta):
+    assert errors._campo_y_ruta(loc) == (campo, ruta)
