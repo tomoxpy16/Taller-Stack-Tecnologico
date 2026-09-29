@@ -71,18 +71,20 @@ class AprobarPostulacion(_ConRepositorios):
         postulacion.aprobar()  # falla si ya estaba resuelta
         animal.marcar_adoptado()
 
+        # Orden deliberado: primero lo que decide la adopción (animal y aprobación) y al final el
+        # cierre automático. Si algo falla a mitad, lo que queda son pendientes sobre un animal
+        # adoptado, que ya no se pueden aprobar (TransicionInvalida) y se pueden volver a cerrar;
+        # al revés quedarían postulaciones cerradas sobre un animal que nadie adoptó.
+        animal = await self._animales.guardar(animal)
+        postulacion = await self._postulaciones.guardar(postulacion)
+
         pendientes = await self._postulaciones.listar_por_animal(
             animal.id, estado=EstadoPostulacion.PENDIENTE
         )
         cerradas = []
         for otra in pendientes:
-            if otra.id == postulacion.id:
-                continue
             otra.cerrar_automaticamente()
             cerradas.append(await self._postulaciones.guardar(otra))
-
-        postulacion = await self._postulaciones.guardar(postulacion)
-        animal = await self._animales.guardar(animal)
         return ResultadoResolucion(postulacion, animal, cerradas)
 
 
